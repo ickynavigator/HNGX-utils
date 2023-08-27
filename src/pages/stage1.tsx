@@ -4,26 +4,80 @@ import {
   Container,
   Group,
   Modal,
+  Stack,
   Text,
+  TextInput,
   Title,
+  createStyles,
+  rem,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
 import CustomDropzone from '~/components/Dropzone';
+import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api, type RouterInputs } from '~/utils/api';
 import { parseCsv } from '~/utils/csvHelpers';
 
+const useStyles = createStyles(theme => ({
+  root: {
+    position: 'relative',
+  },
+
+  input: {
+    height: rem(54),
+    paddingTop: rem(18),
+  },
+
+  label: {
+    position: 'absolute',
+    pointerEvents: 'none',
+    fontSize: theme.fontSizes.xs,
+    paddingLeft: theme.spacing.sm,
+    paddingTop: `calc(${theme.spacing.sm} / 2)`,
+    zIndex: 1,
+  },
+}));
 type Users = RouterInputs['stages']['stage1'];
 
 const Page = () => {
+  const { classes } = useStyles();
   const stage1 = api.stages.stage1.useMutation();
-  const [manualAddOpen, manualAddHandlers] = useDisclosure(false);
+  const [manualAddOpen, manualAddHandlers] = useDisclosure(false, {
+    onClose: () => {
+      manualAddForm.reset();
+    },
+  });
 
   const form = useForm<Users>({
     initialValues: {
       users: [],
+    },
+    validate: {
+      users: value => {
+        if (value.length === 0) return 'Please add at least 1 user';
+        return true;
+      },
+    },
+  });
+
+  const manualAddForm = useForm({
+    initialValues: {
+      username: '',
+      hostedLink: '',
+      email: '',
+    },
+    validate: {
+      username: value => {
+        if (value.length === 0) return 'Username is required';
+      },
+      hostedLink: value => {
+        if (value.length === 0) return 'Hosted link is required';
+      },
+      email: value => {
+        if (value.length === 0) return 'Email is required';
+      },
     },
   });
 
@@ -54,6 +108,9 @@ const Page = () => {
   return (
     <Container py="xl">
       <Title>Stage 1 tests</Title>
+
+      {form.errors.users && <CustomError message={form.errors.users} />}
+      {stage1.isError && <CustomError />}
 
       <CustomDropzone
         onDrop={files => {
@@ -94,8 +151,50 @@ const Page = () => {
       </Group>
 
       {manualAddOpen && (
-        <Modal onClose={manualAddHandlers.close} opened={manualAddOpen}>
-          Not implemented yet
+        <Modal
+          onClose={manualAddHandlers.close}
+          opened={manualAddOpen}
+          title="Manual Add"
+        >
+          <form
+            onSubmit={manualAddForm.onSubmit(values => {
+              addUser(values);
+              manualAddHandlers.close();
+            })}
+          >
+            <Stack>
+              <TextInput
+                withAsterisk
+                classNames={classes}
+                label="Username"
+                placeholder="Enter the username"
+                {...manualAddForm.getInputProps('username')}
+              />
+              <TextInput
+                withAsterisk
+                classNames={classes}
+                label="Hosted Link"
+                placeholder="Enter the hosted link"
+                {...manualAddForm.getInputProps('hostedLink')}
+              />
+              <TextInput
+                withAsterisk
+                classNames={classes}
+                label="Email"
+                placeholder="Enter the email"
+                {...manualAddForm.getInputProps('email')}
+              />
+
+              <Group position="right" mt="lg">
+                <Button onClick={manualAddHandlers.close} color="red">
+                  Cancel
+                </Button>
+                <Button type="submit" color="green">
+                  Add
+                </Button>
+              </Group>
+            </Stack>
+          </form>
         </Modal>
       )}
 
