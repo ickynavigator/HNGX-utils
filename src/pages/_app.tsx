@@ -1,6 +1,7 @@
 import { MantineProvider } from '@mantine/core';
 import { type AppType } from 'next/app';
 import Head from 'next/head';
+import Layout from '~/components/Layout';
 import { RouterTransition } from '~/components/RouterTransition';
 import { api } from '~/utils/api';
 
@@ -23,7 +24,9 @@ const MyApp: AppType = props => {
         }}
       >
         <RouterTransition />
-        <Component {...pageProps} />
+        <Layout>
+          <Component {...pageProps} />
+        </Layout>
       </MantineProvider>
     </>
   );
