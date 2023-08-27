@@ -1,5 +1,5 @@
 {
-  "name": "HNGX-utils",
+  "name": "hngx-utils",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -27,7 +27,7 @@
     "@trpc/react-query": "^10.34.0",
     "@trpc/server": "^10.34.0",
     "next": "^13.4.2",
-    "puppeteer": "^21.1.0",
+    "playwright": "^1.37.1",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "superjson": "^1.13.1",
