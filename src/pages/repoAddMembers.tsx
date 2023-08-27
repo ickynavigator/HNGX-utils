@@ -11,6 +11,7 @@ import {
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import CustomError from '~/components/Error';
+import CustomSuccess from '~/components/Success';
 import { api } from '~/utils/api';
 
 const useStyles = createStyles(theme => ({
@@ -102,6 +103,13 @@ const Page = () => {
                   Add Users
                 </Button>
               </Group>
+
+              {addUsers.isError && (
+                <CustomError message="Something went wrong!" />
+              )}
+              {addUsers.isSuccess && (
+                <CustomSuccess message="Users added successfully!" />
+              )}
             </Stack>
           </form>
         )}
