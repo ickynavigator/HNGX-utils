@@ -107,7 +107,10 @@ const Page = () => {
               );
             })}
 
-            <Button onClick={() => stage1.mutate(form.values)}>
+            <Button
+              onClick={() => stage1.mutate(form.values)}
+              loading={stage1.isLoading}
+            >
               Run Tests
             </Button>
           </Group>
