@@ -89,7 +89,7 @@ const Page = () => {
         </Text>
       </CustomDropzone>
 
-      <Group position="right">
+      <Group position="right" mb="lg">
         <Button onClick={manualAddHandlers.open}>Manual Add</Button>
       </Group>
 
