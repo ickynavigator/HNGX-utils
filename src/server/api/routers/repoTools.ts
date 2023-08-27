@@ -12,7 +12,9 @@ export const repoToolsRouter = createTRPCRouter({
       const URL = 'GET /user/repos';
 
       for await (const response of octokit.paginate.iterator(URL)) {
-        repos = repos.concat(response.data.map(r => r.name));
+        repos = repos.concat(
+          response.data.map(r => `${r.owner.login}/${r.name}`),
+        );
       }
 
       return repos;
