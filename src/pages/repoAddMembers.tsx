@@ -35,6 +35,8 @@ const useStyles = createStyles(theme => ({
 }));
 
 const Page = () => {
+  const DELIMITER = ',';
+
   const repoFetch = api.repoTools.repoFetch.useMutation();
   const addUsers = api.repoTools.addUsers.useMutation();
 
@@ -48,6 +50,13 @@ const Page = () => {
     initialValues: {
       selectedRepo: '',
       users: '',
+    },
+    validate: {
+      selectedRepo: value => value.length > 0,
+      users: value => {
+        const users = value.split(DELIMITER).map(user => user.trim());
+        return users.length > 0 && users.every(user => user.length > 0);
+      },
     },
   });
 
@@ -75,11 +84,19 @@ const Page = () => {
 
         {repoFetch.data != undefined && (
           <form
-            onSubmit={updateForm.onSubmit(values => addUsers.mutate(values))}
+            onSubmit={updateForm.onSubmit(values => {
+              const users = values.users
+                .split(DELIMITER)
+                .map(user => user.trim());
+
+              addUsers.mutate({
+                selectedRepo: values.selectedRepo,
+                token: form.values.token,
+                users,
+              });
+            })}
           >
             <Stack>
-              {addUsers.isError && <CustomError />}
-
               <Select
                 withAsterisk
                 classNames={classes}
@@ -95,7 +112,7 @@ const Page = () => {
                 maxRows={4}
                 label="Emails/Usernames"
                 placeholder="Enter Users"
-                description="Enter a list of emails or usernames separated by a comma"
+                description={`Enter a list of emails or usernames separated by a '${DELIMITER}'`}
                 {...updateForm.getInputProps('users')}
               />
               <Group position="right">
