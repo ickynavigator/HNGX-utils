@@ -3,10 +3,12 @@ import {
   Button,
   Container,
   Group,
+  Modal,
   Text,
   Title,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
 import CustomDropzone from '~/components/Dropzone';
 import CustomTable from '~/components/Table';
@@ -17,6 +19,7 @@ type Users = RouterInputs['stages']['stage1'];
 
 const Page = () => {
   const stage1 = api.stages.stage1.useMutation();
+  const [manualAddOpen, manualAddHandlers] = useDisclosure(false);
 
   const form = useForm<Users>({
     initialValues: {
@@ -85,6 +88,16 @@ const Page = () => {
           Attach only 1 file. The file should not exceed 5mb
         </Text>
       </CustomDropzone>
+
+      <Group position="right">
+        <Button onClick={manualAddHandlers.open}>Manual Add</Button>
+      </Group>
+
+      {manualAddOpen && (
+        <Modal onClose={manualAddHandlers.close} opened={manualAddOpen}>
+          Not implemented yet
+        </Modal>
+      )}
 
       {form.values.users.length > 0 && (
         <>
