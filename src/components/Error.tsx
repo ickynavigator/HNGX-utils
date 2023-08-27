@@ -2,7 +2,7 @@ import { Alert } from '@mantine/core';
 import { IconAlertCircle } from '@tabler/icons-react';
 
 interface ICustomErrorProps {
-  message?: string;
+  message?: React.ReactNode;
 }
 const CustomError = (props: ICustomErrorProps) => {
   const { message = 'Something terrible happened!' } = props;
