@@ -11,7 +11,7 @@ import {
   type CSSObject,
   type NavbarProps,
 } from '@mantine/core';
-import { IconBrandGithub, IconPlus } from '@tabler/icons-react';
+import { IconBrandGithub, IconNumber1 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
 const useStyles = createStyles(theme => ({
@@ -89,8 +89,16 @@ const data = [
     label: 'Add Github Members',
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
-        <IconBrandGithub stroke={1.5} />
-        <IconPlus stroke={1.5} />
+        <IconBrandGithub stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1',
+    label: 'Stage 1 Tests',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconNumber1 stroke={2} />
       </ActionIcon>
     ),
   },
