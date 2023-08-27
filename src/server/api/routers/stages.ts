@@ -36,14 +36,15 @@ export const stageRouter = createTRPCRouter({
         }
 
         if (!link.includes('https://')) {
-          // TODO: HANDLE
+          link = `https://${link}`;
         }
 
         const page = await browser.newPage();
         page.setDefaultTimeout(PAGE_TIMEOUT);
 
         try {
-          await page.goto(link.trim());
+          const url = new URL(link.trim()).toString();
+          await page.goto(url);
 
           let grade = 0;
 
@@ -57,9 +58,7 @@ export const stageRouter = createTRPCRouter({
           };
 
           const slackUserName = await getElementTextContent('slackUserName');
-          console.log(slackUserName);
           if (slackUserName === username) {
-            console.log('passed username');
             grade += 10;
           }
 
@@ -67,8 +66,6 @@ export const stageRouter = createTRPCRouter({
             await getElementByTestID('slackDisplayImage')
           )?.evaluate(el => el.getAttribute('alt'));
           if (slackImgAlt === username) {
-            console.log('passed image');
-
             grade += 10;
           }
 
@@ -81,7 +78,6 @@ export const stageRouter = createTRPCRouter({
               getDayOfTheWeek(day).toLowerCase() ===
               currentDayOfTheWeek.toLowerCase()
             ) {
-              console.log('passed day');
               grade += 10;
             }
           }
@@ -90,7 +86,6 @@ export const stageRouter = createTRPCRouter({
           if (utcTime) {
             const time = new Date().getTime();
             if (isNumberInRange(time, Number(utcTime), UTC_RANGE)) {
-              console.log('passed utc');
               grade += 10;
             }
           }
@@ -103,18 +98,17 @@ export const stageRouter = createTRPCRouter({
               .includes('frontend');
 
             if (check) {
-              console.log('passed track');
               grade += 10;
             }
           }
 
-          console.log(username, grade);
           if (grade >= PASS_MARK) {
             passed.push(`${username}, ${email}`);
           } else {
             failed.push(`${username},${link},${email}`);
           }
         } catch (error) {
+          console.error(error);
           pending.push({ username, hostedLink: link, email });
         }
 
@@ -130,11 +124,15 @@ export const stageRouter = createTRPCRouter({
 
       const passedText = passed.join('\n');
       const failedText = failed.join('\n');
-      const pendingText = `username,link,email\n ${pending
-        .map(
-          v => `${v.username.trim()},${v.hostedLink.trim()},${v.email.trim()}`,
-        )
-        .join('\n')}`;
+      const pendingText =
+        pending.length > 0
+          ? `username,link,email\n ${pending
+              .map(
+                v =>
+                  `${v.username.trim()},${v.hostedLink.trim()},${v.email.trim()}`,
+              )
+              .join('\n')}`
+          : '';
 
       return { passed: passedText, failed: failedText, pending: pendingText };
     }),
