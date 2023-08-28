@@ -2,7 +2,7 @@ import {
   Burger,
   Header,
   MediaQuery,
-  Text,
+  Title,
   useMantineTheme,
 } from '@mantine/core';
 
@@ -27,7 +27,7 @@ const CustomHeader = (props: ICustomHeaderProps) => {
           />
         </MediaQuery>
 
-        <Text>Application header</Text>
+        <Title>HNGx Utils</Title>
       </div>
     </Header>
   );

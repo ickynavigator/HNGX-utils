@@ -1,9 +1,7 @@
 import {
   ActionIcon,
-  Group,
   Navbar,
   Text,
-  Title,
   createStyles,
   getStylesRef,
   rem,
@@ -15,14 +13,6 @@ import { IconBrandGithub, IconNumber1 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
 const useStyles = createStyles(theme => ({
-  header: {
-    paddingBottom: theme.spacing.md,
-    marginBottom: `calc(${theme.spacing.md} * 1.5)`,
-    borderBottom: `${rem(1)} solid ${
-      theme.colorScheme === 'dark' ? theme.colors.dark[4] : theme.colors.gray[2]
-    }`,
-  },
-
   footer: {
     paddingTop: theme.spacing.md,
     marginTop: theme.spacing.md,
@@ -130,12 +120,7 @@ const CustomNavbar = (props: Omit<NavbarProps, 'children'>) => {
 
   return (
     <Navbar p="md" {...props}>
-      <Navbar.Section grow>
-        <Group className={classes.header} position="apart">
-          <Title>HNGx</Title>
-        </Group>
-        {links}
-      </Navbar.Section>
+      <Navbar.Section grow>{links}</Navbar.Section>
 
       <Navbar.Section className={classes.footer}>
         <Text align="center">Built with ❤️</Text>
