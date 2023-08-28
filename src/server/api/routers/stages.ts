@@ -110,6 +110,8 @@ export const stageRouter = createTRPCRouter({
         } catch (error) {
           console.error(error);
           pending.push({ username, hostedLink: link, email });
+
+          throw new Error(`Failed to grade - ${username}`);
         }
 
         await page.close();
