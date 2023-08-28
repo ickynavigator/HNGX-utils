@@ -33,7 +33,7 @@ const Layout = ({ children }: ILayoutProps) => {
           p="md"
           hiddenBreakpoint="sm"
           hidden={!opened}
-          width={{ sm: 200, lg: 300 }}
+          width={{ sm: 300 }}
         />
       }
       header={<CustomHeader opened={opened} setOpened={setOpened} />}
