@@ -110,7 +110,7 @@ const Page = () => {
       <Title>Stage 1 tests</Title>
 
       {form.errors.users && <CustomError message={form.errors.users} />}
-      {stage1.isError && <CustomError />}
+      {stage1.isError && <CustomError message={stage1.error.message} />}
 
       <CustomDropzone
         onDrop={files => {
