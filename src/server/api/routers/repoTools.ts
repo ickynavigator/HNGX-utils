@@ -39,6 +39,20 @@ export const repoToolsRouter = createTRPCRouter({
           throw new Error('Invalid repository name');
         }
 
+        const validated = await Promise.all(
+          input.users.map(async user => {
+            if (user.includes('@')) {
+              const res = await octokit.rest.search.users({ q: user });
+              const userData = res.data.items[0];
+
+              if (!userData) throw new Error(`User ${user} not found`);
+              return userData.login;
+            }
+
+            return user;
+          }),
+        );
+
         const handleCollaboratorAdd = async (username: string) => {
           return await octokit.rest.repos.addCollaborator({
             owner,
@@ -48,7 +62,7 @@ export const repoToolsRouter = createTRPCRouter({
           });
         };
 
-        await Promise.all(input.users.map(handleCollaboratorAdd));
+        await Promise.all(validated.map(handleCollaboratorAdd));
       } catch (error) {
         console.error(error);
 
