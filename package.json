@@ -6,7 +6,8 @@
     "build": "next build && npx playwright install",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@emotion/react": "^11.11.1",
@@ -19,6 +20,7 @@
     "@mantine/notifications": "^6.0.19",
     "@mantine/nprogress": "^6.0.19",
     "@octokit/rest": "^20.0.1",
+    "@prisma/client": "^5.2.0",
     "@t3-oss/env-nextjs": "^0.3.1",
     "@tabler/icons-react": "^2.32.0",
     "@tanstack/react-query": "^4.29.25",
@@ -28,6 +30,7 @@
     "@trpc/server": "^10.34.0",
     "next": "^13.4.2",
     "playwright": "^1.37.1",
+    "prisma": "^5.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "superjson": "^1.13.1",
