@@ -14,7 +14,7 @@ const user = z.object({
 const users = z.array(user);
 
 const PAGE_TIMEOUT = 1000 * 120;
-const PASS_MARK = 30;
+const PASS_MARK = 100;
 const UTC_RANGE = 1000000;
 
 export const stageRouter = createTRPCRouter({
@@ -59,14 +59,14 @@ export const stageRouter = createTRPCRouter({
 
           const slackUserName = await getElementTextContent('slackUserName');
           if (slackUserName === username) {
-            grade += 10;
+            grade += 20;
           }
 
           const slackImgAlt = await (
             await getElementByTestID('slackDisplayImage')
           )?.evaluate(el => el.getAttribute('alt'));
           if (slackImgAlt === username) {
-            grade += 10;
+            grade += 20;
           }
 
           const currentDayOfTheWeek = await getElementTextContent(
@@ -78,7 +78,7 @@ export const stageRouter = createTRPCRouter({
               getDayOfTheWeek(day).toLowerCase() ===
               currentDayOfTheWeek.toLowerCase()
             ) {
-              grade += 10;
+              grade += 20;
             }
           }
 
@@ -86,7 +86,7 @@ export const stageRouter = createTRPCRouter({
           if (utcTime) {
             const time = new Date().getTime();
             if (isNumberInRange(time, Number(utcTime), UTC_RANGE)) {
-              grade += 10;
+              grade += 20;
             }
           }
 
@@ -98,14 +98,14 @@ export const stageRouter = createTRPCRouter({
               .includes('frontend');
 
             if (check) {
-              grade += 10;
+              grade += 20;
             }
           }
 
           if (grade >= PASS_MARK) {
-            passed.push(`${username}, ${email}`);
+            passed.push(`${username}, ${email}, ${grade}`);
           } else {
-            failed.push(`${username},${link},${email}`);
+            failed.push(`${username},${link},${email},${grade}`);
           }
         } catch (error) {
           console.error(error);
