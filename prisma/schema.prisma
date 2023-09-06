@@ -10,7 +10,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Stage1User {
   username   String @unique
   hostedLink String
   email      String @unique

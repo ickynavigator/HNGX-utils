@@ -35,6 +35,14 @@ export const stageRouter = createTRPCRouter({
           return;
         }
 
+        const user = await ctx.prisma.stage1User.findUnique({
+          where: { username },
+        });
+
+        if (user) {
+          return;
+        }
+
         if (!link.includes('https://')) {
           link = `https://${link}`;
         }
@@ -104,19 +112,10 @@ export const stageRouter = createTRPCRouter({
 
           if (grade >= PASS_MARK) {
             passed.push(`${username}, ${email}, ${grade}`);
-            const user = await ctx.prisma.user.findUnique({
-              where: { username },
+
+            await ctx.prisma.stage1User.create({
+              data: { username, email, hostedLink: link },
             });
-            if (user) {
-              await ctx.prisma.user.update({
-                where: { username },
-                data: { username, email, hostedLink: link },
-              });
-            } else {
-              await ctx.prisma.user.create({
-                data: { username, email, hostedLink: link },
-              });
-            }
           } else {
             failed.push(`${username},${link},${email},${grade}`);
           }
@@ -157,7 +156,7 @@ export const stageRouter = createTRPCRouter({
       return { passed: passedText, failed: failedText, pending: pendingText };
     }),
   stage1Get: publicProcedure.query(async ({ ctx }) => {
-    const users = await ctx.prisma.user.findMany();
+    const users = await ctx.prisma.stage1User.findMany();
     return users;
   }),
 });
