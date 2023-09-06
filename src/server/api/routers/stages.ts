@@ -131,8 +131,13 @@ export const stageRouter = createTRPCRouter({
       }
 
       await Promise.all(
-        users.map(submission =>
-          grade(submission.username, submission.hostedLink, submission.email),
+        users.map(
+          async submission =>
+            await grade(
+              submission.username,
+              submission.hostedLink,
+              submission.email,
+            ),
         ),
       );
       await browser.close();
