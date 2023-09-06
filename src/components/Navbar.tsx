@@ -9,7 +9,11 @@ import {
   type CSSObject,
   type NavbarProps,
 } from '@mantine/core';
-import { IconBrandGithub, IconNumber1 } from '@tabler/icons-react';
+import {
+  IconBrandGithub,
+  IconNumber1,
+  IconRosetteNumber1,
+} from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
 const useStyles = createStyles(theme => ({
@@ -92,6 +96,15 @@ const data = [
       </ActionIcon>
     ),
   },
+  {
+    link: 'stage1/results',
+    label: 'Stage 1 Results',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconRosetteNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
 ];
 
 const CustomNavbar = (props: Omit<NavbarProps, 'children'>) => {
@@ -110,7 +123,7 @@ const CustomNavbar = (props: Omit<NavbarProps, 'children'>) => {
       className={cx(classes.link, {
         [classes.linkActive]: item.link.toLowerCase() === active,
       })}
-      href={item.link}
+      href={`/${item.link}`}
       key={item.label}
     >
       <item.icon className={classes.linkIcon} />

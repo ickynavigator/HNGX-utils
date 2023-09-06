@@ -20,7 +20,7 @@ const UTC_RANGE = 1000000;
 export const stageRouter = createTRPCRouter({
   stage1: publicProcedure
     .input(z.object({ users }))
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const { users } = input;
 
       const passed: string[] = [];
@@ -104,6 +104,19 @@ export const stageRouter = createTRPCRouter({
 
           if (grade >= PASS_MARK) {
             passed.push(`${username}, ${email}, ${grade}`);
+            const user = await ctx.prisma.user.findUnique({
+              where: { username },
+            });
+            if (user) {
+              await ctx.prisma.user.update({
+                where: { username },
+                data: { username, email, hostedLink: link },
+              });
+            } else {
+              await ctx.prisma.user.create({
+                data: { username, email, hostedLink: link },
+              });
+            }
           } else {
             failed.push(`${username},${link},${email},${grade}`);
           }
@@ -138,4 +151,8 @@ export const stageRouter = createTRPCRouter({
 
       return { passed: passedText, failed: failedText, pending: pendingText };
     }),
+  stage1Get: publicProcedure.query(async ({ ctx }) => {
+    const users = await ctx.prisma.user.findMany();
+    return users;
+  }),
 });
