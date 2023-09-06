@@ -81,7 +81,7 @@ export const stageRouter = createTRPCRouter({
             'currentDayOfTheWeek',
           );
           if (currentDayOfTheWeek) {
-            const day = new Date().getDay();
+            const day = new Date().getUTCDay();
             if (
               getDayOfTheWeek(day).toLowerCase() ===
               currentDayOfTheWeek.toLowerCase()
