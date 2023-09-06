@@ -220,6 +220,15 @@ const Page = () => {
             })}
 
             <Button
+              color="yellow"
+              onClick={() => {
+                form.setFieldValue('users', []);
+              }}
+            >
+              Clear all
+            </Button>
+
+            <Button
               onClick={() => stage1.mutate(form.values)}
               loading={stage1.isLoading}
             >
