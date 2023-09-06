@@ -83,7 +83,7 @@ const Page = () => {
 
   const addUser = (user: Users['users'][number]) => {
     if (form.values.users.find(u => u.username === user.username)) return;
-    form.setFieldValue('users', [...form.values.users, user]);
+    form.insertListItem('users', user);
   };
   const removeUser = (username: Users['users'][number]['username']) => {
     form.setFieldValue(
@@ -126,13 +126,12 @@ const Page = () => {
               });
               results.forEach(result => {
                 if (result !== null && Object.keys(result).length > 0) {
-                  console.log(result);
                   users.push(result);
                 }
               });
             }
 
-            users.reverse().forEach(user => addUser(user));
+            users.forEach(user => addUser(user));
           };
 
           files.forEach(file => reader.readAsText(file));
