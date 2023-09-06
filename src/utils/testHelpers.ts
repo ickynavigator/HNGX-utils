@@ -39,7 +39,7 @@ const minimal_args = [
 ];
 export const getBrowser = async () => {
   const browser = await puppeteer.launch({
-    headless: true,
+    headless: 'new',
     args: minimal_args,
     ignoreHTTPSErrors: true,
   });
