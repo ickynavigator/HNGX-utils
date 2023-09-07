@@ -104,6 +104,15 @@ export async function stage1Grade(
     return;
   }
 
+  if (link.includes('http//')) {
+    link = link.replace('http//', 'https://');
+  }
+  if (link.includes('http://')) {
+    link = link.replace('http://', 'https://');
+  }
+  if (link.includes('https//')) {
+    link = link.replace('https//', 'https://');
+  }
   if (!link.includes('https://')) {
     link = `https://${link}`;
   }
