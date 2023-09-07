@@ -14,6 +14,7 @@ import {
 import { useForm } from '@mantine/form';
 import { useDisclosure } from '@mantine/hooks';
 import { IconTrash } from '@tabler/icons-react';
+import { z } from 'zod';
 import CustomDropzone from '~/components/Dropzone';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
@@ -40,6 +41,12 @@ const useStyles = createStyles(theme => ({
   },
 }));
 type Users = RouterInputs['stages']['stage1Upload'];
+
+const schema = z.object({
+  username: z.string(),
+  hostedLink: z.string(),
+  email: z.string(),
+});
 
 const Page = () => {
   const { classes } = useStyles();
@@ -114,7 +121,10 @@ const Page = () => {
               });
               results.forEach(result => {
                 if (result !== null && Object.keys(result).length > 0) {
-                  users.push(result);
+                  const parsed = schema.safeParse(result);
+                  if (parsed.success) {
+                    users.push(parsed.data);
+                  }
                 }
               });
             }
