@@ -156,12 +156,7 @@ const CustomTable = <Data extends Row>({
         value={search}
         onChange={handleSearchChange}
       />
-      <Table
-        horizontalSpacing="md"
-        verticalSpacing="xs"
-        miw={700}
-        sx={{ tableLayout: 'fixed' }}
-      >
+      <Table horizontalSpacing="md" verticalSpacing="xs" miw={700}>
         <thead>
           <tr>
             {headers.map(header => (
