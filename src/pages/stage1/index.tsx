@@ -83,6 +83,7 @@ const Page = () => {
 
   const addUser = (user: Users['users'][number]) => {
     if (form.values.users.find(u => u.username === user.username)) return;
+    if (form.values.users.find(u => u.email === user.email)) return;
     form.insertListItem('users', user);
   };
   const removeUser = (username: Users['users'][number]['username']) => {
