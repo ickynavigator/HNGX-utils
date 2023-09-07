@@ -16,3 +16,10 @@ model Stage1User {
   email      String @unique
   grade      Int    @default(0)
 }
+
+model Stage1UserFailed {
+  username   String @id @unique
+  hostedLink String
+  email      String @unique
+  grade      Int    @default(0)
+}

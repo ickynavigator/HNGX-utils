@@ -170,4 +170,25 @@ export const stageRouter = createTRPCRouter({
     const users = await ctx.prisma.stage1User.findMany();
     return users;
   }),
+  stage1GetFailed: publicProcedure.query(async ({ ctx }) => {
+    const users = await ctx.prisma.stage1UserFailed.findMany();
+    return users;
+  }),
+  stage1DeleteFailed: publicProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      }),
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { username } = input;
+      await ctx.prisma.stage1UserFailed.delete({
+        where: { username },
+      });
+      return true;
+    }),
+  stage1DeleteAllFailed: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.stage1UserFailed.deleteMany();
+    return true;
+  }),
 });

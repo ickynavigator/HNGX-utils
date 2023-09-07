@@ -11,6 +11,7 @@ import {
 } from '@mantine/core';
 import {
   IconBrandGithub,
+  IconHexagonNumber1,
   IconNumber1,
   IconRosetteNumber1,
 } from '@tabler/icons-react';
@@ -102,6 +103,15 @@ const data = [
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
         <IconRosetteNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/failed',
+    label: 'Stage 1 Failed',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconHexagonNumber1 stroke={2} />
       </ActionIcon>
     ),
   },
