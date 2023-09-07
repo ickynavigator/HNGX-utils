@@ -113,6 +113,14 @@ export const stageRouter = createTRPCRouter({
           if (grade >= PASS_MARK) {
             passed.push(`${username}, ${email}, ${grade}`);
 
+            const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
+              where: { username },
+            });
+
+            if (failedUser) {
+              await ctx.prisma.stage1User.delete({ where: { username } });
+            }
+
             const user = await ctx.prisma.stage1User.findUnique({
               where: { username },
             });
@@ -129,6 +137,20 @@ export const stageRouter = createTRPCRouter({
             }
           } else {
             failed.push(`${username},${link},${email},${grade}`);
+            const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
+              where: { username },
+            });
+
+            if (failedUser) {
+              await ctx.prisma.stage1UserFailed.update({
+                where: { username },
+                data: { username, email, hostedLink: link, grade },
+              });
+            } else {
+              await ctx.prisma.stage1UserFailed.create({
+                data: { username, email, hostedLink: link, grade },
+              });
+            }
           }
         } catch (error) {
           console.error(error);
