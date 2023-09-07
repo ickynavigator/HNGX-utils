@@ -14,5 +14,5 @@ model Stage1User {
   username   String @id @unique
   hostedLink String
   email      String @unique
-  grade      Int
+  grade      Int    @default(0)
 }
