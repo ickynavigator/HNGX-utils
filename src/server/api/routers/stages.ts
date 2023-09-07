@@ -14,7 +14,7 @@ const user = z.object({
 const users = z.array(user);
 
 const PAGE_TIMEOUT = 1000 * 120;
-const PASS_MARK = 100;
+const PASS_MARK = 60;
 const UTC_RANGE = 1000000;
 
 export const stageRouter = createTRPCRouter({
@@ -36,7 +36,7 @@ export const stageRouter = createTRPCRouter({
         }
 
         const user = await ctx.prisma.stage1User.findUnique({
-          where: { username },
+          where: { username, grade: { equals: 100 } },
         });
 
         if (user) {
@@ -113,9 +113,20 @@ export const stageRouter = createTRPCRouter({
           if (grade >= PASS_MARK) {
             passed.push(`${username}, ${email}, ${grade}`);
 
-            await ctx.prisma.stage1User.create({
-              data: { username, email, hostedLink: link },
+            const user = await ctx.prisma.stage1User.findUnique({
+              where: { username },
             });
+
+            if (user) {
+              await ctx.prisma.stage1User.update({
+                where: { username },
+                data: { username, email, hostedLink: link, grade },
+              });
+            } else {
+              await ctx.prisma.stage1User.create({
+                data: { username, email, hostedLink: link, grade },
+              });
+            }
           } else {
             failed.push(`${username},${link},${email},${grade}`);
           }

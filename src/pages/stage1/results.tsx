@@ -24,7 +24,7 @@ const results = () => {
   return (
     <Container>
       <CustomTable
-        headers={['username', 'hostedLink', 'email']}
+        headers={['username', 'hostedLink', 'email', 'grade']}
         data={stage1.data}
       >
         {users => {
@@ -33,6 +33,7 @@ const results = () => {
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
+              <td>{user.grade}</td>
             </tr>
           ));
         }}
