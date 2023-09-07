@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Stage1User {
-  username   String @unique
+  username   String @id @unique
   hostedLink String
   email      String @unique
   grade      Int
