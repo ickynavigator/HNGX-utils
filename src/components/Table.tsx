@@ -156,7 +156,7 @@ const CustomTable = <Data extends Row>({
         value={search}
         onChange={handleSearchChange}
       />
-      <Table horizontalSpacing="md" verticalSpacing="xs" miw={700}>
+      <Table>
         <thead>
           <tr>
             {headers.map(header => (
@@ -166,7 +166,7 @@ const CustomTable = <Data extends Row>({
                 reversed={reverseSortDirection}
                 onSort={() => setSorting(header)}
               >
-                <Text>{String(header)}</Text>
+                {String(header)}
               </Th>
             ))}
             {showActionsRow && <th />}
