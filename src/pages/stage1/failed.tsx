@@ -33,13 +33,14 @@ const results = () => {
 
   return (
     <Container>
-      <Group>
+      <Group mb="lg">
         <Button
           disabled={stage1.data == undefined || stage1.data.length == 0}
           color="red"
           onClick={() => {
             deleteStage1FailedAll.mutate();
           }}
+          loading={deleteStage1FailedAll.isLoading}
         >
           Delete all
         </Button>
