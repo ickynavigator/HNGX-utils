@@ -95,11 +95,20 @@ const sortData = <Data extends Row>(
 
   return filterData(
     [...data].sort((a, b) => {
-      if (payload.reversed) {
-        return String(b[sortBy]).localeCompare(String(a[sortBy]));
+      const aItem = a[sortBy];
+      const bItem = b[sortBy];
+
+      if (typeof aItem === 'number' && typeof bItem === 'number') {
+        return payload.reversed ? bItem - aItem : aItem - bItem;
       }
 
-      return String(a[sortBy]).localeCompare(String(b[sortBy]));
+      if (typeof aItem === 'string' && typeof bItem === 'string') {
+        return payload.reversed
+          ? String(bItem).localeCompare(String(aItem))
+          : String(aItem).localeCompare(String(bItem));
+      }
+
+      return 0;
     }),
     payload.search,
   );
