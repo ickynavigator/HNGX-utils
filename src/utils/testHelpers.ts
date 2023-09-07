@@ -42,6 +42,7 @@ export const getBrowser = async () => {
     headless: 'new',
     args: minimal_args,
     ignoreHTTPSErrors: true,
+    protocolTimeout: 1000 * 120,
   });
 
   return browser;
