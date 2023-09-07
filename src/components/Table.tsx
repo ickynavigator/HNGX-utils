@@ -43,7 +43,7 @@ const useStyles = createStyles(theme => ({
 }));
 
 type Row = {
-  [key in string]: string;
+  [key in string]: string | number;
 };
 
 interface ThProps {
@@ -79,7 +79,7 @@ const Th = ({ children, reversed, sorted, onSort }: ThProps) => {
 const filterData = <Data extends Row>(data: Data[], search: string) => {
   const query = search.toLowerCase().trim();
   return data.filter(item =>
-    keys(data[0]).some(key => item[key]?.toLowerCase().includes(query)),
+    keys(data[0]).some(key => String(item[key])?.toLowerCase().includes(query)),
   );
 };
 
