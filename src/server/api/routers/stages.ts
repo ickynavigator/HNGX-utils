@@ -137,8 +137,10 @@ export const stageRouter = createTRPCRouter({
             }
           } else {
             failed.push(`${username},${link},${email},${grade}`);
-            const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
-              where: { username, email },
+            const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
+              where: {
+                OR: [{ username }, { email }],
+              },
             });
 
             if (failedUser) {
