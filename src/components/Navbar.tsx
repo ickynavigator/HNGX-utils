@@ -14,7 +14,6 @@ import {
   IconBrandGithub,
   IconCircleNumber1,
   IconHexagonNumber1,
-  IconNumber1,
   IconRosetteNumber1,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
@@ -91,11 +90,20 @@ const data = [
     ),
   },
   {
-    link: 'stage1',
-    label: 'Stage 1 Tests',
+    link: 'stage1/upload',
+    label: 'Stage 1 Upload',
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
-        <IconNumber1 stroke={2} />
+        <IconCircleNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/pending',
+    label: 'Stage 1 Pending',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconBoxMultiple1 stroke={2} />
       </ActionIcon>
     ),
   },
@@ -114,24 +122,6 @@ const data = [
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
         <IconHexagonNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/upload',
-    label: 'Stage 1 Upload',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconCircleNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/pending',
-    label: 'Stage 1 Pending',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconBoxMultiple1 stroke={2} />
       </ActionIcon>
     ),
   },
