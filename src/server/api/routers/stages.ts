@@ -1,10 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
-import {
-  getBrowser,
-  getDayOfTheWeek,
-  isNumberInRange,
-} from '~/utils/testHelpers';
+import { promiseAllInBatches } from '~/utils/general';
+import { getBrowser, stage1Grade } from '~/utils/testHelpers';
 
 const user = z.object({
   username: z.string(),
@@ -12,10 +9,6 @@ const user = z.object({
   email: z.string(),
 });
 const users = z.array(user);
-
-const PAGE_TIMEOUT = 1000 * 120;
-const PASS_MARK = 60;
-const UTC_RANGE = 1000000;
 
 export const stageRouter = createTRPCRouter({
   stage1: publicProcedure
@@ -29,152 +22,80 @@ export const stageRouter = createTRPCRouter({
 
       const browser = await getBrowser();
 
-      async function grade(username: string, link: string, email: string) {
-        if (!username || !link || !email) {
-          // TODO: HANDLE
-          return;
-        }
+      await promiseAllInBatches(async submission => {
+        await stage1Grade(
+          browser,
+          submission.username,
+          submission.hostedLink,
+          submission.email,
+          {
+            firstCheck: async ({ username }) => {
+              const user = await ctx.prisma.stage1User.findUnique({
+                where: { username, grade: { equals: 100 } },
+              });
 
-        const user = await ctx.prisma.stage1User.findUnique({
-          where: { username, grade: { equals: 100 } },
-        });
+              if (user) {
+                return true;
+              }
 
-        if (user) {
-          return;
-        }
+              return false;
+            },
+            passed: async ({ username, email, grade, link }) => {
+              passed.push(`${username}, ${email}, ${grade}`);
 
-        if (!link.includes('https://')) {
-          link = `https://${link}`;
-        }
+              await ctx.prisma.stage1Pending.delete({ where: { email } });
 
-        const page = await browser.newPage();
-        page.setDefaultTimeout(PAGE_TIMEOUT);
-
-        try {
-          const url = new URL(link.trim()).toString();
-          await page.goto(url);
-
-          let grade = 0;
-
-          const getElementByTestID = async (selector: string) => {
-            return await page.$(`[data-testid="${selector}"]`);
-          };
-          const getElementTextContent = async (selector: string) => {
-            return await (
-              await getElementByTestID(selector)
-            )?.evaluate(el => el.textContent);
-          };
-
-          const slackUserName = await getElementTextContent('slackUserName');
-          if (slackUserName === username) {
-            grade += 20;
-          }
-
-          const slackImgAlt = await (
-            await getElementByTestID('slackDisplayImage')
-          )?.evaluate(el => el.getAttribute('alt'));
-          if (slackImgAlt === username) {
-            grade += 20;
-          }
-
-          const currentDayOfTheWeek = await getElementTextContent(
-            'currentDayOfTheWeek',
-          );
-          if (currentDayOfTheWeek) {
-            const day = new Date().getUTCDay();
-            if (
-              getDayOfTheWeek(day).toLowerCase() ===
-              currentDayOfTheWeek.toLowerCase()
-            ) {
-              grade += 20;
-            }
-          }
-
-          const utcTime = await getElementTextContent('currentUTCTime');
-          if (utcTime) {
-            const time = new Date().getTime();
-            if (isNumberInRange(time, Number(utcTime), UTC_RANGE)) {
-              grade += 20;
-            }
-          }
-
-          const track = await getElementTextContent('myTrack');
-          if (track) {
-            const check = track
-              .replace(/front(.*)end/gi, 'frontend')
-              .toLowerCase()
-              .includes('frontend');
-
-            if (check) {
-              grade += 20;
-            }
-          }
-
-          if (grade >= PASS_MARK) {
-            passed.push(`${username}, ${email}, ${grade}`);
-
-            const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
-              where: { username },
-            });
-
-            if (failedUser) {
-              await ctx.prisma.stage1User.delete({ where: { username } });
-            }
-
-            const user = await ctx.prisma.stage1User.findUnique({
-              where: { username },
-            });
-
-            if (user) {
-              await ctx.prisma.stage1User.update({
+              const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
                 where: { username },
-                data: { username, email, hostedLink: link, grade },
               });
-            } else {
-              await ctx.prisma.stage1User.create({
-                data: { username, email, hostedLink: link, grade },
-              });
-            }
-          } else {
-            failed.push(`${username},${link},${email},${grade}`);
-            const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
-              where: {
-                OR: [{ username }, { email }],
-              },
-            });
 
-            if (failedUser) {
-              await ctx.prisma.stage1UserFailed.update({
+              if (failedUser) {
+                await ctx.prisma.stage1UserFailed.delete({
+                  where: { username },
+                });
+              }
+
+              const user = await ctx.prisma.stage1User.findUnique({
                 where: { username },
-                data: { username, email, hostedLink: link, grade },
               });
-            } else {
-              await ctx.prisma.stage1UserFailed.create({
-                data: { username, email, hostedLink: link, grade },
+
+              if (user) {
+                await ctx.prisma.stage1User.update({
+                  where: { username },
+                  data: { username, email, hostedLink: link, grade },
+                });
+              } else {
+                await ctx.prisma.stage1User.create({
+                  data: { username, email, hostedLink: link, grade },
+                });
+              }
+            },
+            failed: async ({ username, email, grade, link }) => {
+              failed.push(`${username},${link},${email},${grade}`);
+              const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
+                where: {
+                  OR: [{ username }, { email }],
+                },
               });
-            }
-          }
-        } catch (error) {
-          console.error(error);
-          pending.push({ username, hostedLink: link, email });
 
-          await page.close();
-          throw new Error(`Failed to grade - ${username}`);
-        }
+              if (failedUser) {
+                await ctx.prisma.stage1UserFailed.update({
+                  where: { username },
+                  data: { username, email, hostedLink: link, grade },
+                });
+              } else {
+                await ctx.prisma.stage1UserFailed.create({
+                  data: { username, email, hostedLink: link, grade },
+                });
+              }
+            },
+            pending: ({ username, email, link }) => {
+              pending.push({ username, hostedLink: link, email });
+            },
+          },
+        );
+      }, users);
 
-        await page.close();
-      }
-
-      await Promise.all(
-        users.map(
-          async submission =>
-            await grade(
-              submission.username,
-              submission.hostedLink,
-              submission.email,
-            ),
-        ),
-      );
       await browser.close();
 
       const passedText = passed.join('\n');
@@ -215,5 +136,121 @@ export const stageRouter = createTRPCRouter({
   stage1DeleteAllFailed: publicProcedure.mutation(async ({ ctx }) => {
     await ctx.prisma.stage1UserFailed.deleteMany();
     return true;
+  }),
+  stage1DeleteAllPassed: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.stage1User.deleteMany();
+    return true;
+  }),
+  stage1Upload: publicProcedure
+    .input(z.object({ users }))
+    .mutation(async ({ input, ctx }) => {
+      const { users } = input;
+
+      await promiseAllInBatches(async user => {
+        const { email, username, hostedLink } = user;
+        const userExists = await ctx.prisma.stage1Pending.findUnique({
+          where: { email },
+        });
+
+        if (userExists) {
+          await ctx.prisma.stage1Pending.update({
+            where: { email },
+            data: { email, username, hostedLink },
+          });
+
+          return;
+        }
+
+        await ctx.prisma.stage1Pending.create({
+          data: { email, username, hostedLink },
+        });
+      }, users);
+    }),
+  stage1GetPending: publicProcedure.query(async ({ ctx }) => {
+    const users = await ctx.prisma.stage1Pending.findMany();
+    return users;
+  }),
+  stage1DeletePending: publicProcedure.mutation(async ({ ctx }) => {
+    const users = await ctx.prisma.stage1Pending.deleteMany();
+    return users;
+  }),
+  stage1RunPending: publicProcedure.mutation(async ({ ctx }) => {
+    const users = await ctx.prisma.stage1Pending.findMany();
+
+    const browser = await getBrowser();
+
+    await promiseAllInBatches(
+      async item => {
+        await stage1Grade(browser, item.username, item.hostedLink, item.email, {
+          firstCheck: async ({ username }) => {
+            const user = await ctx.prisma.stage1User.findUnique({
+              where: { username, grade: { equals: 100 } },
+            });
+
+            if (user) {
+              return true;
+            }
+
+            return false;
+          },
+          passed: async ({ username, email, grade, link }) => {
+            const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
+              where: { username },
+            });
+
+            if (failedUser) {
+              await ctx.prisma.stage1UserFailed.delete({ where: { username } });
+            }
+
+            await ctx.prisma.stage1Pending.delete({ where: { email } });
+
+            const user = await ctx.prisma.stage1User.findUnique({
+              where: { username },
+            });
+
+            if (user) {
+              await ctx.prisma.stage1User.update({
+                where: { username },
+                data: { username, email, hostedLink: link, grade },
+              });
+            } else {
+              await ctx.prisma.stage1User.create({
+                data: { username, email, hostedLink: link, grade },
+              });
+            }
+          },
+          failed: async ({ username, email, grade, link }) => {
+            const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
+              where: {
+                OR: [{ username }, { email }],
+              },
+            });
+
+            const passedUser = await ctx.prisma.stage1User.findUnique({
+              where: { username },
+            });
+
+            if (passedUser) {
+              await ctx.prisma.stage1User.delete({ where: { username } });
+            }
+
+            if (failedUser) {
+              await ctx.prisma.stage1UserFailed.update({
+                where: { username },
+                data: { username, email, hostedLink: link, grade },
+              });
+            } else {
+              await ctx.prisma.stage1UserFailed.create({
+                data: { username, email, hostedLink: link, grade },
+              });
+            }
+          },
+        });
+      },
+      users,
+      50,
+    );
+
+    await browser.close();
   }),
 });

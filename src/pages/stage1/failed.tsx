@@ -12,9 +12,19 @@ import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
 
 const results = () => {
+  const utils = api.useContext();
+
   const stage1 = api.stages.stage1GetFailed.useQuery();
-  const deleteStage1Failed = api.stages.stage1DeleteFailed.useMutation();
-  const deleteStage1FailedAll = api.stages.stage1DeleteAllFailed.useMutation();
+  const deleteStage1Failed = api.stages.stage1DeleteFailed.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1GetFailed.invalidate();
+    },
+  });
+  const deleteStage1FailedAll = api.stages.stage1DeleteAllFailed.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1GetFailed.invalidate();
+    },
+  });
 
   if (stage1.isLoading) {
     return (
@@ -31,6 +41,32 @@ const results = () => {
     );
   }
 
+  const handleDownload = (data: string, filename: string) => {
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    return;
+  };
+
+  const handleCSVdownload = () => {
+    const data = `username,email,hostedLink,grade\n ${stage1.data
+      .map(
+        v =>
+          `${v.username.trim()},${v.email.trim()},${v.hostedLink.trim()},${
+            v.grade
+          }`,
+      )
+      .join('\n')}`;
+
+    handleDownload(data, 'failed');
+  };
+
   return (
     <Container>
       <Group mb="lg">
@@ -43,6 +79,13 @@ const results = () => {
           loading={deleteStage1FailedAll.isLoading}
         >
           Delete all
+        </Button>
+        <Button
+          onClick={() => {
+            handleCSVdownload();
+          }}
+        >
+          Download {`(${stage1.data?.length})`}
         </Button>
       </Group>
       <CustomTable

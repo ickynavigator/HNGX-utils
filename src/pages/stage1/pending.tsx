@@ -3,13 +3,20 @@ import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
 
-const results = () => {
+const Page = () => {
   const utils = api.useContext();
 
-  const stage1 = api.stages.stage1Get.useQuery();
-  const deleteStage1Result = api.stages.stage1DeleteAllPassed.useMutation({
+  const stage1 = api.stages.stage1GetPending.useQuery(undefined, {
+    keepPreviousData: false,
+  });
+  const stage1Delete = api.stages.stage1DeletePending.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1Get.invalidate();
+      await utils.stages.stage1GetPending.invalidate();
+    },
+  });
+  const stage1RunPending = api.stages.stage1RunPending.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1GetPending.invalidate();
     },
   });
 
@@ -28,50 +35,36 @@ const results = () => {
     );
   }
 
-  const handleDownload = (data: string, filename: string) => {
-    const blob = new Blob([data], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-
-    a.setAttribute('hidden', '');
-    a.setAttribute('href', url);
-    a.setAttribute('download', `${filename}.csv`);
-    document.body.appendChild(a);
-    a.click();
-    return;
-  };
-
-  const handleCSVdownload = () => {
-    const data = `username,email,grade\n ${stage1.data
-      .map(v => `${v.username.trim()},${v.email.trim()},${v.grade}`)
-      .join('\n')}`;
-
-    handleDownload(data, 'passed');
-  };
-
   return (
     <Container>
+      {stage1Delete.isError && (
+        <CustomError message={stage1Delete.error.message} />
+      )}
+
       <Group mb="lg">
+        <Button
+          disabled={stage1.data == undefined || stage1.data.length == 0}
+          color="green"
+          onClick={() => {
+            stage1RunPending.mutate();
+          }}
+          loading={stage1RunPending.isLoading}
+        >
+          Run Tests
+        </Button>
         <Button
           disabled={stage1.data == undefined || stage1.data.length == 0}
           color="red"
           onClick={() => {
-            deleteStage1Result.mutate();
+            stage1Delete.mutate();
           }}
-          loading={deleteStage1Result.isLoading}
+          loading={stage1Delete.isLoading}
         >
-          Delete all
-        </Button>
-        <Button
-          onClick={() => {
-            handleCSVdownload();
-          }}
-        >
-          Download {`(${stage1.data?.length})`}
+          Delete All {`(${stage1.data?.length})`}
         </Button>
       </Group>
       <CustomTable
-        headers={['username', 'hostedLink', 'email', 'grade']}
+        headers={['username', 'hostedLink', 'email']}
         data={stage1.data}
       >
         {users => {
@@ -80,7 +73,6 @@ const results = () => {
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
-              <td>{user.grade}</td>
             </tr>
           ));
         }}
@@ -89,4 +81,4 @@ const results = () => {
   );
 };
 
-export default results;
+export default Page;

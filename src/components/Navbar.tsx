@@ -10,7 +10,9 @@ import {
   type NavbarProps,
 } from '@mantine/core';
 import {
+  IconBoxMultiple1,
   IconBrandGithub,
+  IconCircleNumber1,
   IconHexagonNumber1,
   IconNumber1,
   IconRosetteNumber1,
@@ -112,6 +114,24 @@ const data = [
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
         <IconHexagonNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/upload',
+    label: 'Stage 1 Upload',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconCircleNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/pending',
+    label: 'Stage 1 Pending',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconBoxMultiple1 stroke={2} />
       </ActionIcon>
     ),
   },
