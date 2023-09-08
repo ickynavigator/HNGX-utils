@@ -22,79 +22,82 @@ export const stage1Router = createTRPCRouter({
 
       const browser = await getBrowser();
 
-      await promiseAllInBatches(async submission => {
-        await stage1Grade(
-          browser,
-          submission.username,
-          submission.hostedLink,
-          submission.email,
-          {
-            firstCheck: async ({ username }) => {
-              const user = await ctx.prisma.stage1User.findUnique({
-                where: { username, grade: { equals: 100 } },
-              });
+      await promiseAllInBatches(
+        async submission => {
+          await stage1Grade(
+            browser,
+            submission.username,
+            submission.hostedLink,
+            submission.email,
+            {
+              firstCheck: async ({ username }) => {
+                const user = await ctx.prisma.stage1User.findUnique({
+                  where: { username, grade: { equals: 100 } },
+                });
 
-              if (user) {
-                return true;
-              }
+                if (user) return true;
+                return false;
+              },
+              passed: async ({ username, email, grade, link }) => {
+                passed.push(`${username}, ${email}, ${grade}`);
 
-              return false;
-            },
-            passed: async ({ username, email, grade, link }) => {
-              passed.push(`${username}, ${email}, ${grade}`);
+                await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
 
-              await ctx.prisma.stage1Pending.delete({ where: { email } });
+                const failedUser = await ctx.prisma.stage1UserFailed.findUnique(
+                  {
+                    where: { username },
+                  },
+                );
 
-              const failedUser = await ctx.prisma.stage1UserFailed.findUnique({
-                where: { username },
-              });
+                if (failedUser) {
+                  await ctx.prisma.stage1UserFailed.delete({
+                    where: { username },
+                  });
+                }
 
-              if (failedUser) {
-                await ctx.prisma.stage1UserFailed.delete({
+                const user = await ctx.prisma.stage1User.findUnique({
                   where: { username },
                 });
-              }
 
-              const user = await ctx.prisma.stage1User.findUnique({
-                where: { username },
-              });
+                if (user) {
+                  await ctx.prisma.stage1User.update({
+                    where: { username },
+                    data: { username, email, hostedLink: link, grade },
+                  });
+                } else {
+                  await ctx.prisma.stage1User.create({
+                    data: { username, email, hostedLink: link, grade },
+                  });
+                }
+              },
+              failed: async ({ username, email, grade, link }) => {
+                failed.push(`${username},${link},${email},${grade}`);
+                const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
+                  where: {
+                    OR: [{ username }, { email }],
+                  },
+                });
 
-              if (user) {
-                await ctx.prisma.stage1User.update({
-                  where: { username },
-                  data: { username, email, hostedLink: link, grade },
-                });
-              } else {
-                await ctx.prisma.stage1User.create({
-                  data: { username, email, hostedLink: link, grade },
-                });
-              }
+                if (failedUser) {
+                  await ctx.prisma.stage1UserFailed.update({
+                    where: { username },
+                    data: { username, email, hostedLink: link, grade },
+                  });
+                } else {
+                  await ctx.prisma.stage1UserFailed.create({
+                    data: { username, email, hostedLink: link, grade },
+                  });
+                }
+              },
+              pending: ({ username, email, link }) => {
+                pending.push({ username, hostedLink: link, email });
+              },
             },
-            failed: async ({ username, email, grade, link }) => {
-              failed.push(`${username},${link},${email},${grade}`);
-              const failedUser = await ctx.prisma.stage1UserFailed.findFirst({
-                where: {
-                  OR: [{ username }, { email }],
-                },
-              });
-
-              if (failedUser) {
-                await ctx.prisma.stage1UserFailed.update({
-                  where: { username },
-                  data: { username, email, hostedLink: link, grade },
-                });
-              } else {
-                await ctx.prisma.stage1UserFailed.create({
-                  data: { username, email, hostedLink: link, grade },
-                });
-              }
-            },
-            pending: ({ username, email, link }) => {
-              pending.push({ username, hostedLink: link, email });
-            },
-          },
-        );
-      }, users);
+          );
+        },
+        users,
+        50,
+      );
 
       await browser.close();
 
@@ -187,10 +190,7 @@ export const stage1Router = createTRPCRouter({
               where: { username, grade: { equals: 100 } },
             });
 
-            if (user) {
-              return true;
-            }
-
+            if (user) return true;
             return false;
           },
           passed: async ({ username, email, grade, link }) => {
@@ -202,7 +202,7 @@ export const stage1Router = createTRPCRouter({
               await ctx.prisma.stage1UserFailed.delete({ where: { username } });
             }
 
-            await ctx.prisma.stage1Pending.delete({ where: { email } });
+            await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
 
             const user = await ctx.prisma.stage1User.findUnique({
               where: { username },
