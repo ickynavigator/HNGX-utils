@@ -83,18 +83,19 @@ type Response = {
   email: string;
   grade: number;
 };
-export async function stage1Grade(
+type CB = {
+  passed?: (val: Response) => void | Promise<void>;
+  failed?: (val: Response) => void | Promise<void>;
+  pending?: (val: Omit<Response, 'grade'>) => void | Promise<void>;
+  firstCheck?: (val: Omit<Response, 'grade'>) => boolean | Promise<boolean>;
+};
+export const stage1Grade = async (
   browser: Browser,
   username: string,
   link: string,
   email: string,
-  cb: {
-    passed?: (val: Response) => void | Promise<void>;
-    failed?: (val: Response) => void | Promise<void>;
-    pending?: (val: Omit<Response, 'grade'>) => void | Promise<void>;
-    firstCheck?: (val: Omit<Response, 'grade'>) => boolean | Promise<boolean>;
-  },
-) {
+  cb: CB,
+) => {
   if (!username || !link || !email) {
     // TODO: HANDLE
     return;
@@ -129,6 +130,11 @@ export async function stage1Grade(
     const getElementByTestID = async (selector: string) => {
       return await page.$(`[data-testid="${selector}"]`);
     };
+    const getElementAttribute = async (selector: string, attribute: string) => {
+      return await (
+        await getElementByTestID(selector)
+      )?.evaluate(el => el.getAttribute(attribute));
+    };
     const getElementTextContent = async (selector: string) => {
       return await (
         await getElementByTestID(selector)
@@ -140,9 +146,7 @@ export async function stage1Grade(
       grade += 2;
     }
 
-    const slackImgAlt = await (
-      await getElementByTestID('slackDisplayImage')
-    )?.evaluate(el => el.getAttribute('alt'));
+    const slackImgAlt = await getElementAttribute('slackDisplayImage', 'alt');
     if (slackImgAlt === username) {
       grade += 2;
     }
@@ -151,10 +155,8 @@ export async function stage1Grade(
       'currentDayOfTheWeek',
     );
     if (currentDayOfTheWeek) {
-      const day = new Date().getUTCDay();
-      if (
-        getDayOfTheWeek(day).toLowerCase() === currentDayOfTheWeek.toLowerCase()
-      ) {
+      const day = getDayOfTheWeek(new Date().getUTCDay()).toLocaleLowerCase();
+      if (currentDayOfTheWeek.toLowerCase().includes(day)) {
         grade += 2;
       }
     }
@@ -193,5 +195,5 @@ export async function stage1Grade(
   }
 
   await page.close();
-}
+};
 //#endregion
