@@ -1,7 +1,6 @@
 import {
   ActionIcon,
   Button,
-  Container,
   Group,
   Modal,
   Stack,
@@ -51,6 +50,8 @@ const schema = z.object({
 const Page = () => {
   const { classes } = useStyles();
   const stage1 = api.stages.stage1Upload.useMutation();
+  const stage1Tests = api.stages.stage1.useMutation();
+
   const [manualAddOpen, manualAddHandlers] = useDisclosure(false, {
     onClose: () => {
       manualAddForm.reset();
@@ -88,6 +89,19 @@ const Page = () => {
     },
   });
 
+  const handleDownload = (data: string, filename: string) => {
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    return;
+  };
+
   const addUser = (user: Users['users'][number]) => {
     if (form.values.users.find(u => u.username === user.username)) return;
     if (form.values.users.find(u => u.email === user.email)) return;
@@ -101,7 +115,7 @@ const Page = () => {
   };
 
   return (
-    <Container py="xl">
+    <>
       <Title>Stage 1 tests - Upload all</Title>
 
       {form.errors.users && <CustomError message={form.errors.users} />}
@@ -198,6 +212,33 @@ const Page = () => {
       {form.values.users.length > 0 && (
         <>
           <Group position="right" mb="xl">
+            {(['passed', 'pending', 'failed'] as const).map(type => {
+              return (
+                <Button
+                  key={type}
+                  disabled={
+                    stage1Tests.data == undefined ||
+                    stage1Tests.data[type].length === 0
+                  }
+                  color="green"
+                  onClick={() => {
+                    if (stage1Tests.data == undefined) return;
+                    handleDownload(stage1Tests.data[type], type);
+                  }}
+                >
+                  Download {type}
+                </Button>
+              );
+            })}
+
+            <Button
+              color="green"
+              onClick={() => stage1Tests.mutate(form.values)}
+              loading={stage1Tests.isLoading}
+            >
+              Run Tests
+            </Button>
+
             <Button
               color="yellow"
               onClick={() => {
@@ -243,7 +284,7 @@ const Page = () => {
           </CustomTable>
         </>
       )}
-    </Container>
+    </>
   );
 };
 
