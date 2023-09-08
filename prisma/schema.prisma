@@ -13,19 +13,22 @@ datasource db {
 model Stage1Pending {
   username   String
   hostedLink String
-  email      String @id @unique
+  email      String   @id @unique
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 model Stage1User {
-  username   String @id @unique
+  username   String   @id @unique
   hostedLink String
-  email      String @unique
-  grade      Int    @default(0)
+  email      String   @unique
+  grade      Int      @default(0)
+  updatedAt  DateTime @default(now()) @updatedAt
 }
 
 model Stage1UserFailed {
-  username   String @id @unique
+  username   String   @id @unique
   hostedLink String
-  email      String @unique
-  grade      Int    @default(0)
+  email      String   @unique
+  grade      Int      @default(0)
+  updatedAt  DateTime @default(now()) @updatedAt
 }

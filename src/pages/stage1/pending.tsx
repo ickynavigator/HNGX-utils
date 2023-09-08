@@ -1,4 +1,4 @@
-import { Button, Center, Container, Group, Loader } from '@mantine/core';
+import { Button, Center, Group, Loader } from '@mantine/core';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
@@ -36,7 +36,7 @@ const Page = () => {
   }
 
   return (
-    <Container>
+    <>
       {stage1Delete.isError && (
         <CustomError message={stage1Delete.error.message} />
       )}
@@ -64,12 +64,16 @@ const Page = () => {
         </Button>
       </Group>
       <CustomTable
-        headers={['username', 'hostedLink', 'email']}
-        data={stage1.data}
+        headers={['updatedAt', 'username', 'hostedLink', 'email']}
+        data={stage1.data.map(user => ({
+          ...user,
+          updatedAt: new Date(user.updatedAt).toLocaleString(),
+        }))}
       >
         {users => {
           return users.map(user => (
             <tr key={user.username}>
+              <td>{user.updatedAt}</td>
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
@@ -77,7 +81,7 @@ const Page = () => {
           ));
         }}
       </CustomTable>
-    </Container>
+    </>
   );
 };
 

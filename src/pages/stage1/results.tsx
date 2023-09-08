@@ -1,4 +1,4 @@
-import { Button, Center, Container, Group, Loader } from '@mantine/core';
+import { Button, Center, Group, Loader } from '@mantine/core';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
@@ -50,7 +50,7 @@ const results = () => {
   };
 
   return (
-    <Container>
+    <>
       <Group mb="lg">
         <Button
           disabled={stage1.data == undefined || stage1.data.length == 0}
@@ -71,12 +71,16 @@ const results = () => {
         </Button>
       </Group>
       <CustomTable
-        headers={['username', 'hostedLink', 'email', 'grade']}
-        data={stage1.data}
+        headers={['updatedAt', 'username', 'hostedLink', 'email', 'grade']}
+        data={stage1.data.map(user => ({
+          ...user,
+          updatedAt: new Date(user.updatedAt).toLocaleString(),
+        }))}
       >
         {users => {
           return users.map(user => (
             <tr key={user.username}>
+              <td>{user.updatedAt}</td>
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
@@ -85,7 +89,7 @@ const results = () => {
           ));
         }}
       </CustomTable>
-    </Container>
+    </>
   );
 };
 
