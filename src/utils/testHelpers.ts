@@ -89,13 +89,13 @@ type CB = {
   pending?: (val: Omit<Response, 'grade'>) => void | Promise<void>;
   firstCheck?: (val: Omit<Response, 'grade'>) => boolean | Promise<boolean>;
 };
-export const stage1Grade = async (
+export async function stage1Grade(
   browser: Browser,
   username: string,
   link: string,
   email: string,
   cb: CB,
-) => {
+) {
   if (!username || !link || !email) {
     // TODO: HANDLE
     return;
@@ -130,11 +130,7 @@ export const stage1Grade = async (
     const getElementByTestID = async (selector: string) => {
       return await page.$(`[data-testid="${selector}"]`);
     };
-    const getElementAttribute = async (selector: string, attribute: string) => {
-      return await (
-        await getElementByTestID(selector)
-      )?.evaluate(el => el.getAttribute(attribute));
-    };
+
     const getElementTextContent = async (selector: string) => {
       return await (
         await getElementByTestID(selector)
@@ -146,7 +142,9 @@ export const stage1Grade = async (
       grade += 2;
     }
 
-    const slackImgAlt = await getElementAttribute('slackDisplayImage', 'alt');
+    const slackImgAlt = await (
+      await getElementByTestID('slackDisplayImage')
+    )?.evaluate(el => el.getAttribute('alt'));
     if (slackImgAlt === username) {
       grade += 2;
     }
@@ -195,5 +193,5 @@ export const stage1Grade = async (
   }
 
   await page.close();
-};
+}
 //#endregion
