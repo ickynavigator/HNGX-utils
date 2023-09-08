@@ -63,7 +63,7 @@ const Th = ({ children, reversed, sorted, onSort }: ThProps) => {
   return (
     <th className={classes.th}>
       <UnstyledButton onClick={onSort} className={classes.control}>
-        <Group position="apart">
+        <Group position="apart" miw="9rem">
           <Text fw={500} fz="sm" tt="capitalize">
             {children}
           </Text>
