@@ -1,6 +1,6 @@
 import { repoToolsRouter } from '~/server/api/routers/repoTools';
-import { createTRPCRouter } from '~/server/api/trpc';
-import { stageRouter } from './routers/stages';
+import { createTRPCRouter, mergeRouters } from '~/server/api/trpc';
+import { stage1Router } from './routers/stage1';
 
 /**
  * This is the primary router for your server.
@@ -9,7 +9,7 @@ import { stageRouter } from './routers/stages';
  */
 export const appRouter = createTRPCRouter({
   repoTools: repoToolsRouter,
-  stages: stageRouter,
+  stages: mergeRouters(stage1Router),
 });
 
 // export type definition of API

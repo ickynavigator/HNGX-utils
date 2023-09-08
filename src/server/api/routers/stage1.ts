@@ -3,14 +3,14 @@ import { createTRPCRouter, publicProcedure } from '~/server/api/trpc';
 import { promiseAllInBatches } from '~/utils/general';
 import { getBrowser, stage1Grade } from '~/utils/testHelpers';
 
-const user = z.object({
+export const user = z.object({
   username: z.string(),
   hostedLink: z.string(),
   email: z.string(),
 });
-const users = z.array(user);
+export const users = z.array(user);
 
-export const stageRouter = createTRPCRouter({
+export const stage1Router = createTRPCRouter({
   stage1: publicProcedure
     .input(z.object({ users }))
     .mutation(async ({ input, ctx }) => {
