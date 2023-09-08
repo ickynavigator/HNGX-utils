@@ -1,4 +1,3 @@
-import { repoToolsRouter } from '~/server/api/routers/repoTools';
 import { createTRPCRouter, mergeRouters } from '~/server/api/trpc';
 import { stage1Router } from './routers/stage1';
 
@@ -8,7 +7,6 @@ import { stage1Router } from './routers/stage1';
  * All routers added in /api/routers should be manually added here.
  */
 export const appRouter = createTRPCRouter({
-  repoTools: repoToolsRouter,
   stages: mergeRouters(stage1Router),
 });
 

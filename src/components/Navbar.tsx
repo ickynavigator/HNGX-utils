@@ -11,7 +11,6 @@ import {
 } from '@mantine/core';
 import {
   IconBoxMultiple1,
-  IconBrandGithub,
   IconCircleNumber1,
   IconHexagonNumber1,
   IconRosetteNumber1,
@@ -80,15 +79,6 @@ const useStyles = createStyles(theme => ({
 }));
 
 const data = [
-  {
-    link: 'repoAddMembers',
-    label: 'Add Github Members',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconBrandGithub stroke={2} />
-      </ActionIcon>
-    ),
-  },
   {
     link: 'stage1/upload',
     label: 'Stage 1 Upload',
