@@ -1,13 +1,31 @@
-import { Button, Center, Group, Loader } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Center,
+  Group,
+  Loader,
+  useMantineTheme,
+} from '@mantine/core';
+import { IconCheck } from '@tabler/icons-react';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
 
-const results = () => {
+const Page = () => {
+  const theme = useMantineTheme();
   const utils = api.useContext();
-
   const stage1 = api.stages.stage1Get.useQuery();
   const deleteStage1Result = api.stages.stage1DeleteAllPassed.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1Get.invalidate();
+    },
+  });
+  const promoteAllStage1 = api.stages.stage1PromoteAll.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1Get.invalidate();
+    },
+  });
+  const promoteSpecificStage1 = api.stages.stage1PromoteSpecific.useMutation({
     onSuccess: async () => {
       await utils.stages.stage1Get.invalidate();
     },
@@ -60,14 +78,23 @@ const results = () => {
           }}
           loading={deleteStage1Result.isLoading}
         >
-          Delete all
+          Delete all - {`(${stage1.data?.length})`}
         </Button>
         <Button
           onClick={() => {
             handleCSVdownload();
           }}
         >
-          Download {`(${stage1.data?.length})`}
+          Download CSV
+        </Button>
+        <Button
+          onClick={() => {
+            promoteAllStage1.mutate();
+          }}
+          color="green"
+          loading={promoteAllStage1.isLoading}
+        >
+          Mark all as promoted
         </Button>
       </Group>
       <CustomTable
@@ -75,16 +102,41 @@ const results = () => {
         data={stage1.data.map(user => ({
           ...user,
           updatedAt: new Date(user.updatedAt).toLocaleString(),
+          promoted: user.promoted ? 'Yes' : 'No',
         }))}
+        showActionsRow
       >
         {users => {
           return users.map(user => (
-            <tr key={user.username}>
+            <tr
+              key={user.username}
+              style={{
+                backgroundColor:
+                  user.promoted === 'Yes'
+                    ? theme.colors.green[3]
+                    : theme.colors.yellow[0],
+              }}
+            >
               <td>{user.updatedAt}</td>
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
               <td>{user.grade}</td>
+              <td>
+                <Group position="center" grow>
+                  <ActionIcon
+                    color="green"
+                    variant="filled"
+                    loading={promoteSpecificStage1.isLoading}
+                    disabled={user.promoted === 'Yes'}
+                    onClick={() =>
+                      promoteSpecificStage1.mutate({ emails: [user.email] })
+                    }
+                  >
+                    <IconCheck />
+                  </ActionIcon>
+                </Group>
+              </td>
             </tr>
           ));
         }}
@@ -93,4 +145,4 @@ const results = () => {
   );
 };
 
-export default results;
+export default Page;

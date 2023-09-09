@@ -253,4 +253,19 @@ export const stage1Router = createTRPCRouter({
 
     await browser.close();
   }),
+  stage1PromoteAll: publicProcedure.mutation(async ({ ctx }) => {
+    await ctx.prisma.stage1User.updateMany({
+      data: { promoted: true },
+    });
+  }),
+  stage1PromoteSpecific: publicProcedure
+    .input(z.object({ emails: z.array(z.string()) }))
+    .mutation(async ({ input, ctx }) => {
+      const { emails } = input;
+
+      await ctx.prisma.stage1User.updateMany({
+        where: { email: { in: emails } },
+        data: { promoted: true },
+      });
+    }),
 });
