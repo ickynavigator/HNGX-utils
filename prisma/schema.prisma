@@ -23,6 +23,7 @@ model Stage1User {
   email      String   @unique
   grade      Int      @default(0)
   updatedAt  DateTime @default(now()) @updatedAt
+  promoted   Boolean  @default(false)
 }
 
 model Stage1UserFailed {
