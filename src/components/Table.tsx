@@ -16,7 +16,7 @@ import {
   IconSearch,
   IconSelector,
 } from '@tabler/icons-react';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 const useStyles = createStyles(theme => ({
   th: {
@@ -131,6 +131,12 @@ const CustomTable = <Data extends Row>({
   const [sortedData, setSortedData] = useState(data);
   const [sortBy, setSortBy] = useState<keyof Data | null>(null);
   const [reverseSortDirection, setReverseSortDirection] = useState(false);
+  useEffect(() => {
+    setSortedData(
+      sortData(data, { sortBy, reversed: reverseSortDirection, search }),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data]);
 
   const setSorting = (field: keyof Data) => {
     const reversed = field === sortBy ? !reverseSortDirection : false;
