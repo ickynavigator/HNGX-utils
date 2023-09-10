@@ -44,7 +44,7 @@ export const stage1Router = createTRPCRouter({
                   where: { email, grade: { equals: 100 } },
                 });
 
-                return user == null ? true : false;
+                return user == null ? false : true;
               },
               passed: async ({ username, email, grade, link }) => {
                 passed.push(`${username}, ${email}, ${grade}`);
@@ -200,7 +200,7 @@ export const stage1Router = createTRPCRouter({
               where: { email, grade: { equals: 100 } },
             });
 
-            return user == null ? true : false;
+            return user == null ? false : true;
           },
           passed: async ({ username, email, grade, link }) => {
             await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
