@@ -100,7 +100,7 @@ export async function stage1Grade(
   username: string,
   link: string,
   email: string,
-  cb: CB,
+  cb?: CB,
 ) {
   const PASS_MARK = 6;
   const UTC_RANGE = 1000000;
@@ -110,7 +110,7 @@ export async function stage1Grade(
     return;
   }
 
-  if (await cb.firstCheck?.({ username, link, email })) {
+  if (await cb?.firstCheck?.({ username, link, email })) {
     return;
   }
 
@@ -148,14 +148,14 @@ export async function stage1Grade(
     };
 
     const slackUserName = await getElementTextContent('slackUserName');
-    if (slackUserName === username) {
+    if (slackUserName?.toLowerCase().includes(username.toLowerCase())) {
       grade += 2;
     }
 
     const slackImgAlt = await (
       await getElementByTestID('slackDisplayImage')
     )?.evaluate(el => el.getAttribute('alt'));
-    if (slackImgAlt === username) {
+    if (slackImgAlt?.toLowerCase().includes(username.toLowerCase())) {
       grade += 2;
     }
 
@@ -190,13 +190,13 @@ export async function stage1Grade(
     }
 
     if (grade >= PASS_MARK) {
-      await cb.passed?.({ username, link, email, grade });
+      await cb?.passed?.({ username, link, email, grade });
     } else {
-      await cb.failed?.({ username, link, email, grade });
+      await cb?.failed?.({ username, link, email, grade });
     }
   } catch (error) {
     console.error(error);
-    await cb.pending?.({ username, link, email });
+    await cb?.pending?.({ username, link, email });
 
     await page.close();
     throw new Error(`Failed to grade - ${username}`);
