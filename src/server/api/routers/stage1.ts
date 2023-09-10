@@ -41,7 +41,7 @@ export const stage1Router = createTRPCRouter({
             {
               firstCheck: async ({ email }) => {
                 const user = await ctx.prisma.stage1User.findFirst({
-                  where: { email, grade: { equals: 100 } },
+                  where: { email, grade: { equals: 10 } },
                 });
 
                 return user == null ? false : true;
@@ -197,7 +197,7 @@ export const stage1Router = createTRPCRouter({
         await stage1Grade(browser, item.username, item.hostedLink, item.email, {
           firstCheck: async ({ email }) => {
             const user = await ctx.prisma.stage1User.findFirst({
-              where: { email, grade: { equals: 100 } },
+              where: { email, grade: { equals: 10 } },
             });
 
             return user == null ? false : true;
