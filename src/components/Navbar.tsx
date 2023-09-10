@@ -14,6 +14,7 @@ import {
   IconCircleNumber1,
   IconHexagonNumber1,
   IconRosetteNumber1,
+  IconSquareNumber1,
 } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
 
@@ -93,16 +94,7 @@ const data = [
     label: 'Stage 1 Pending',
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
-        <IconBoxMultiple1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/results',
-    label: 'Stage 1 Results',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconRosetteNumber1 stroke={2} />
+        <IconHexagonNumber1 stroke={2} />
       </ActionIcon>
     ),
   },
@@ -111,7 +103,25 @@ const data = [
     label: 'Stage 1 Failed',
     icon: (props: ActionIconProps) => (
       <ActionIcon {...props}>
-        <IconHexagonNumber1 stroke={2} />
+        <IconRosetteNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/not-promoted',
+    label: 'Stage 1 Results - Not Promoted',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconSquareNumber1 stroke={2} />
+      </ActionIcon>
+    ),
+  },
+  {
+    link: 'stage1/results',
+    label: 'Stage 1 Results',
+    icon: (props: ActionIconProps) => (
+      <ActionIcon {...props}>
+        <IconBoxMultiple1 stroke={2} />
       </ActionIcon>
     ),
   },
@@ -146,7 +156,7 @@ const CustomNavbar = (props: Omit<NavbarProps, 'children'>) => {
       <Navbar.Section grow>{links}</Navbar.Section>
 
       <Navbar.Section className={classes.footer}>
-        <Text align="center">Built with ❤️</Text>
+        <Text align="center">NOT built with ❤️ anymore</Text>
       </Navbar.Section>
     </Navbar>
   );
