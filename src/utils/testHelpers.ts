@@ -29,6 +29,7 @@ const MINIMAL_ARGS = [
   '--disable-sync',
   '--hide-scrollbars',
   '--ignore-gpu-blacklist',
+  '--ignore-certificate-errors',
   '--metrics-recording-only',
   '--mute-audio',
   '--no-default-browser-check',
@@ -132,6 +133,9 @@ export async function stage1Grade(
   await page.setUserAgent(PAGE_USER_AGENT);
 
   try {
+    page.on('dialog', dialog => {
+      void dialog.accept();
+    });
     const url = new URL(link.trim()).toString();
     await page.goto(url);
 
@@ -195,6 +199,7 @@ export async function stage1Grade(
       await cb?.failed?.({ username, link, email, grade });
     }
   } catch (error) {
+    console.error(email, ' - ', link);
     console.error(error);
     await cb?.pending?.({ username, link, email });
 
