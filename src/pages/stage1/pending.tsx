@@ -7,22 +7,22 @@ import { api } from '~/utils/api';
 const Page = () => {
   const utils = api.useContext();
 
-  const stage1 = api.stages.stage1GetPending.useQuery(undefined, {
+  const stage1 = api.stage1.stageGetPending.useQuery(undefined, {
     keepPreviousData: false,
   });
-  const stage1Delete = api.stages.stage1DeletePending.useMutation({
+  const stage1Delete = api.stage1.stageDeletePending.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1GetPending.invalidate();
+      await utils.stage1.stageGetPending.invalidate();
     },
   });
-  const stage1DeleteAll = api.stages.stage1DeleteAllPending.useMutation({
+  const stage1DeleteAll = api.stage1.stageDeleteAllPending.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1GetPending.invalidate();
+      await utils.stage1.stageGetPending.invalidate();
     },
   });
-  const stage1RunPending = api.stages.stage1RunPending.useMutation({
+  const stage1RunPending = api.stage1.stageRunPending.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1GetPending.invalidate();
+      await utils.stage1.stageGetPending.invalidate();
     },
   });
 

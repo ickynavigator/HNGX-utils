@@ -7,15 +7,15 @@ import { api } from '~/utils/api';
 const results = () => {
   const utils = api.useContext();
 
-  const stage1 = api.stages.stage1GetFailed.useQuery();
-  const deleteStage1Failed = api.stages.stage1DeleteFailed.useMutation({
+  const stage1 = api.stage1.stageGetFailed.useQuery();
+  const deleteStage1Failed = api.stage1.stageDeleteFailed.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1GetFailed.invalidate();
+      await utils.stage1.stageGetFailed.invalidate();
     },
   });
-  const deleteStage1FailedAll = api.stages.stage1DeleteAllFailed.useMutation({
+  const deleteStage1FailedAll = api.stage1.stageDeleteAllFailed.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1GetFailed.invalidate();
+      await utils.stage1.stageGetFailed.invalidate();
     },
   });
 

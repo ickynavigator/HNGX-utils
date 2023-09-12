@@ -14,16 +14,16 @@ import { api } from '~/utils/api';
 const Page = () => {
   const theme = useMantineTheme();
   const utils = api.useContext();
-  const stage1 = api.stages.stage1Get.useQuery({ query: { promoted: false } });
+  const stage1 = api.stage1.stageGet.useQuery({ query: { promoted: false } });
 
-  const promoteAllStage1 = api.stages.stage1PromoteAll.useMutation({
+  const promoteAllStage1 = api.stage1.stagePromoteAll.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1Get.invalidate();
+      await utils.stage1.stageGet.invalidate();
     },
   });
-  const promoteSpecificStage1 = api.stages.stage1PromoteSpecific.useMutation({
+  const promoteSpecificStage1 = api.stage1.stagePromoteSpecific.useMutation({
     onSuccess: async () => {
-      await utils.stages.stage1Get.invalidate();
+      await utils.stage1.stageGet.invalidate();
     },
   });
 

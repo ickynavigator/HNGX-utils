@@ -39,7 +39,7 @@ const useStyles = createStyles(theme => ({
     zIndex: 1,
   },
 }));
-type Users = RouterInputs['stages']['stage1Upload'];
+type Users = RouterInputs['stage1']['stageUpload'];
 
 const schema = z.object({
   username: z.string(),
@@ -49,8 +49,8 @@ const schema = z.object({
 
 const Page = () => {
   const { classes } = useStyles();
-  const stage1 = api.stages.stage1Upload.useMutation();
-  const stage1Tests = api.stages.stage1.useMutation();
+  const stage1 = api.stage1.stageUpload.useMutation();
+  const stage1Tests = api.stage1.stage.useMutation();
 
   const [manualAddOpen, manualAddHandlers] = useDisclosure(false, {
     onClose: () => {

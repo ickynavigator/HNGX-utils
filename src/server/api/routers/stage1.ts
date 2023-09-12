@@ -20,7 +20,7 @@ export const query = z
   .optional();
 
 export const stage1Router = createTRPCRouter({
-  stage1: publicProcedure
+  stage: publicProcedure
     .input(z.object({ users }))
     .mutation(async ({ input, ctx }) => {
       const { users } = input;
@@ -100,17 +100,17 @@ export const stage1Router = createTRPCRouter({
 
       return { passed: passedText, failed: failedText, pending: pendingText };
     }),
-  stage1Get: publicProcedure.input(query).query(async ({ ctx, input }) => {
+  stageGet: publicProcedure.input(query).query(async ({ ctx, input }) => {
     const users = await ctx.prisma.stage1User.findMany({
       where: { promoted: input?.query?.promoted },
     });
     return users;
   }),
-  stage1GetFailed: publicProcedure.query(async ({ ctx }) => {
+  stageGetFailed: publicProcedure.query(async ({ ctx }) => {
     const users = await ctx.prisma.stage1UserFailed.findMany();
     return users;
   }),
-  stage1DeleteFailed: publicProcedure
+  stageDeleteFailed: publicProcedure
     .input(
       z.object({
         username: z.string(),
@@ -123,37 +123,37 @@ export const stage1Router = createTRPCRouter({
       });
       return true;
     }),
-  stage1DeleteAllFailed: publicProcedure.mutation(async ({ ctx }) => {
+  stageDeleteAllFailed: publicProcedure.mutation(async ({ ctx }) => {
     await ctx.prisma.stage1UserFailed.deleteMany();
     return true;
   }),
-  stage1DeleteAllPassed: publicProcedure.mutation(async ({ ctx }) => {
+  stageDeleteAllPassed: publicProcedure.mutation(async ({ ctx }) => {
     await ctx.prisma.stage1User.deleteMany();
     return true;
   }),
-  stage1Upload: publicProcedure
+  stageUpload: publicProcedure
     .input(z.object({ users }))
     .mutation(async ({ input, ctx }) => {
       const { users } = input;
 
       await ctx.prisma.stage1Pending.createMany({ data: users });
     }),
-  stage1GetPending: publicProcedure.query(async ({ ctx }) => {
+  stageGetPending: publicProcedure.query(async ({ ctx }) => {
     const users = await ctx.prisma.stage1Pending.findMany();
     return users;
   }),
-  stage1DeletePending: publicProcedure
+  stageDeletePending: publicProcedure
     .input(z.object({ email: z.string() }))
     .mutation(async ({ input, ctx }) => {
       const { email } = input;
 
       await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
     }),
-  stage1DeleteAllPending: publicProcedure.mutation(async ({ ctx }) => {
+  stageDeleteAllPending: publicProcedure.mutation(async ({ ctx }) => {
     const users = await ctx.prisma.stage1Pending.deleteMany();
     return users;
   }),
-  stage1RunPending: publicProcedure.mutation(async ({ ctx }) => {
+  stageRunPending: publicProcedure.mutation(async ({ ctx }) => {
     const users = await ctx.prisma.stage1Pending.findMany();
     console.debug('start');
 
@@ -203,12 +203,12 @@ export const stage1Router = createTRPCRouter({
 
     console.debug('done');
   }),
-  stage1PromoteAll: publicProcedure.input(query).mutation(async ({ ctx }) => {
+  stagePromoteAll: publicProcedure.input(query).mutation(async ({ ctx }) => {
     await ctx.prisma.stage1User.updateMany({
       data: { promoted: true },
     });
   }),
-  stage1PromoteSpecific: publicProcedure
+  stagePromoteSpecific: publicProcedure
     .input(z.object({ emails: z.array(z.string()) }))
     .mutation(async ({ input, ctx }) => {
       const { emails } = input;
