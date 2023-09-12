@@ -74,6 +74,7 @@ const results = () => {
           Delete all
         </Button>
         <Button
+          disabled={stage1.data == undefined || stage1.data.length == 0}
           onClick={() => {
             handleCSVdownload();
           }}
