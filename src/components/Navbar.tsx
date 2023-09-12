@@ -1,22 +1,13 @@
 import {
-  ActionIcon,
   Navbar,
+  ScrollArea,
   Text,
   createStyles,
-  getStylesRef,
   rem,
-  type ActionIconProps,
-  type CSSObject,
   type NavbarProps,
 } from '@mantine/core';
-import {
-  IconBoxMultiple1,
-  IconCircleNumber1,
-  IconHexagonNumber1,
-  IconRosetteNumber1,
-  IconSquareNumber1,
-} from '@tabler/icons-react';
-import { useEffect, useState } from 'react';
+import { IconNumber1, IconNumber2 } from '@tabler/icons-react';
+import { LinksGroup } from './LinksGroup';
 
 const useStyles = createStyles(theme => ({
   footer: {
@@ -27,133 +18,51 @@ const useStyles = createStyles(theme => ({
     }`,
   },
 
-  link: {
-    ...(theme.fn.focusStyles() as Record<string, CSSObject>),
-    display: 'flex',
-    alignItems: 'center',
-    textDecoration: 'none',
-    fontSize: theme.fontSizes.sm,
-    color:
-      theme.colorScheme === 'dark'
-        ? theme.colors.dark[1]
-        : theme.colors.gray[7],
-    padding: `${theme.spacing.xs} ${theme.spacing.sm}`,
-    borderRadius: theme.radius.sm,
-    fontWeight: 500,
-
-    '&:hover': {
-      backgroundColor:
-        theme.colorScheme === 'dark'
-          ? theme.colors.dark[6]
-          : theme.colors.gray[0],
-      color: theme.colorScheme === 'dark' ? theme.white : theme.black,
-
-      [`& .${getStylesRef('icon')}`]: {
-        color: theme.colorScheme === 'dark' ? theme.white : theme.black,
-      },
-    },
-  },
-
-  linkIcon: {
-    ref: getStylesRef('icon'),
-    color:
-      theme.colorScheme === 'dark'
-        ? theme.colors.dark[2]
-        : theme.colors.gray[6],
-    marginRight: theme.spacing.sm,
-  },
-
-  linkActive: {
-    '&, &:hover': {
-      backgroundColor: theme.fn.variant({
-        variant: 'light',
-        color: theme.primaryColor,
-      }).background,
-      color: theme.fn.variant({ variant: 'light', color: theme.primaryColor })
-        .color,
-      [`& .${getStylesRef('icon')}`]: {
-        color: theme.fn.variant({ variant: 'light', color: theme.primaryColor })
-          .color,
-      },
-    },
+  links: {
+    marginLeft: `calc(${theme.spacing.md} * -1)`,
+    marginRight: `calc(${theme.spacing.md} * -1)`,
   },
 }));
 
+const pageGenerate = (
+  page: string,
+  icon: React.FC<{ size?: string }>,
+  opened = false,
+) => {
+  return [
+    {
+      label: `Stage ${page}`,
+      icon,
+      initiallyOpened: opened,
+      links: [
+        { link: `stage${page}/upload`, label: `Stage ${page} Upload` },
+        { link: `stage${page}/pending`, label: `Stage ${page} Pending` },
+        { link: `stage${page}/failed`, label: `Stage ${page} Failed` },
+        {
+          link: `stage${page}/not-promoted`,
+          label: `Stage ${page} Results - Not Promoted`,
+        },
+        { link: `stage${page}/results`, label: `Stage ${page} Results` },
+      ],
+    },
+  ];
+};
+
 const data = [
-  {
-    link: 'stage1/upload',
-    label: 'Stage 1 Upload',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconCircleNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/pending',
-    label: 'Stage 1 Pending',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconHexagonNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/failed',
-    label: 'Stage 1 Failed',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconRosetteNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/not-promoted',
-    label: 'Stage 1 Results - Not Promoted',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconSquareNumber1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
-  {
-    link: 'stage1/results',
-    label: 'Stage 1 Results',
-    icon: (props: ActionIconProps) => (
-      <ActionIcon {...props}>
-        <IconBoxMultiple1 stroke={2} />
-      </ActionIcon>
-    ),
-  },
+  ...pageGenerate('1', IconNumber1, true),
+  ...pageGenerate('2', IconNumber2),
 ];
 
 const CustomNavbar = (props: Omit<NavbarProps, 'children'>) => {
-  const { classes, cx } = useStyles();
-  const [active, setActive] = useState('');
-
-  useEffect(() => {
-    if (typeof window == undefined) return;
-
-    const currPath = window.location.pathname.slice(1).toLowerCase();
-    setActive(currPath);
-  }, []);
-
-  const links = data.map(item => (
-    <a
-      className={cx(classes.link, {
-        [classes.linkActive]: item.link.toLowerCase() === active,
-      })}
-      href={`/${item.link}`}
-      key={item.label}
-    >
-      <item.icon className={classes.linkIcon} />
-      <span>{item.label}</span>
-    </a>
-  ));
+  const { classes } = useStyles();
 
   return (
-    <Navbar p="md" {...props}>
-      <Navbar.Section grow>{links}</Navbar.Section>
+    <Navbar p="xs" {...props}>
+      <Navbar.Section grow component={ScrollArea} className={classes.links}>
+        {data.map(item => (
+          <LinksGroup {...item} key={item.label} />
+        ))}
+      </Navbar.Section>
 
       <Navbar.Section className={classes.footer}>
         <Text align="center">NOT built with ❤️ anymore</Text>
