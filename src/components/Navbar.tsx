@@ -49,7 +49,7 @@ const pageGenerate = (
 };
 
 const data = [
-  ...pageGenerate('1', IconNumber1, true),
+  ...pageGenerate('1', IconNumber1),
   ...pageGenerate('2', IconNumber2),
 ];
 

@@ -96,7 +96,10 @@ export const LinksGroup = ({
 
     const currPath = window.location.pathname.slice(1).toLowerCase();
     setActive(currPath);
-  }, []);
+    if (links?.some(link => link.link === currPath)) {
+      setOpened(true);
+    }
+  }, [links]);
 
   const hasLinks = Array.isArray(links);
   const ChevronIcon = theme.dir === 'ltr' ? IconChevronRight : IconChevronLeft;
