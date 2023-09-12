@@ -67,7 +67,7 @@ export const getDayOfTheWeek = (day: number) => {
     case 1:
       return 'Monday';
     case 2:
-      return 'Tueday';
+      return 'Tuesday';
     case 3:
       return 'Wednesday';
     case 4:
@@ -165,12 +165,10 @@ export async function stage1Grade(
       grade += 2;
     }
 
-    const currentDayOfTheWeek = await getElementTextContent(
-      'currentDayOfTheWeek',
-    );
-    if (currentDayOfTheWeek) {
-      const day = getDayOfTheWeek(new Date().getUTCDay()).toLocaleLowerCase();
-      if (currentDayOfTheWeek.toLowerCase().includes(day)) {
+    const currentDay = await getElementTextContent('currentDayOfTheWeek');
+    if (currentDay) {
+      const day = getDayOfTheWeek(new Date().getUTCDay()).toLowerCase();
+      if (currentDay.toLowerCase().includes(day)) {
         grade += 2;
       }
     }
