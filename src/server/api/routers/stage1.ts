@@ -142,7 +142,14 @@ export const stage1Router = createTRPCRouter({
     const users = await ctx.prisma.stage1Pending.findMany();
     return users;
   }),
-  stage1DeletePending: publicProcedure.mutation(async ({ ctx }) => {
+  stage1DeletePending: publicProcedure
+    .input(z.object({ email: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      const { email } = input;
+
+      await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
+    }),
+  stage1DeleteAllPending: publicProcedure.mutation(async ({ ctx }) => {
     const users = await ctx.prisma.stage1Pending.deleteMany();
     return users;
   }),

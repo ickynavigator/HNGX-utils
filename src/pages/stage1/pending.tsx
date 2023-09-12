@@ -1,4 +1,5 @@
-import { Button, Center, Group, Loader } from '@mantine/core';
+import { ActionIcon, Button, Center, Group, Loader } from '@mantine/core';
+import { IconTrash } from '@tabler/icons-react';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
@@ -10,6 +11,11 @@ const Page = () => {
     keepPreviousData: false,
   });
   const stage1Delete = api.stages.stage1DeletePending.useMutation({
+    onSuccess: async () => {
+      await utils.stages.stage1GetPending.invalidate();
+    },
+  });
+  const stage1DeleteAll = api.stages.stage1DeleteAllPending.useMutation({
     onSuccess: async () => {
       await utils.stages.stage1GetPending.invalidate();
     },
@@ -37,8 +43,8 @@ const Page = () => {
 
   return (
     <>
-      {stage1Delete.isError && (
-        <CustomError message={stage1Delete.error.message} />
+      {stage1DeleteAll.isError && (
+        <CustomError message={stage1DeleteAll.error.message} />
       )}
 
       <Group mb="lg">
@@ -56,9 +62,9 @@ const Page = () => {
           disabled={stage1.data == undefined || stage1.data.length == 0}
           color="red"
           onClick={() => {
-            stage1Delete.mutate();
+            stage1DeleteAll.mutate();
           }}
-          loading={stage1Delete.isLoading}
+          loading={stage1DeleteAll.isLoading}
         >
           Delete All {`(${stage1.data?.length})`}
         </Button>
@@ -69,6 +75,7 @@ const Page = () => {
           ...user,
           updatedAt: new Date(user.updatedAt).toLocaleString(),
         }))}
+        showActionsRow
       >
         {users => {
           return users.map(user => (
@@ -77,6 +84,17 @@ const Page = () => {
               <td>{user.username}</td>
               <td>{user.hostedLink}</td>
               <td>{user.email}</td>
+              <td>
+                <Group position="right">
+                  <ActionIcon
+                    color="red"
+                    onClick={() => stage1Delete.mutate({ email: user.email })}
+                    loading={stage1Delete.isLoading}
+                  >
+                    <IconTrash />
+                  </ActionIcon>
+                </Group>
+              </td>
             </tr>
           ));
         }}
