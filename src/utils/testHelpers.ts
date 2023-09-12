@@ -137,7 +137,9 @@ export async function stage1Grade(
       void dialog.accept();
     });
     const url = new URL(link.trim()).toString();
-    await page.goto(url);
+    const navigationPromise = page.waitForNavigation();
+    await page.goto(url, { waitUntil: 'networkidle2' });
+    await navigationPromise;
 
     let grade = 0;
 
