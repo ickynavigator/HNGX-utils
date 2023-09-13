@@ -47,6 +47,7 @@ const Page = () => {
     },
   });
   const [showTable, setShowTable] = useState(false);
+  const [localLoad, setLocalLoad] = useState(false);
   const [runLocal, setRunLocal] = useState(true);
 
   const form = useForm<FormSchema>({
@@ -83,8 +84,10 @@ const Page = () => {
   };
 
   const localRunner = () => {
+    setLocalLoad(true);
     const diffed = differ(form.values.general, form.values.nextStage);
     setResults(diffed);
+    setLocalLoad(false);
   };
 
   return (
@@ -180,7 +183,7 @@ const Page = () => {
                   });
                 }
               }}
-              loading={diff.isLoading}
+              loading={diff.isLoading || localLoad}
             >
               Run Diff
             </Button>
