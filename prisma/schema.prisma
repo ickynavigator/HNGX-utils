@@ -33,3 +33,27 @@ model Stage1UserFailed {
   grade      Int      @default(0)
   updatedAt  DateTime @default(now()) @updatedAt
 }
+
+model Stage2Pending {
+  username   String
+  hostedLink String
+  email      String   @id @unique
+  updatedAt  DateTime @default(now())
+}
+
+model Stage2User {
+  username   String
+  hostedLink String
+  email      String   @unique
+  grade      Int      @default(0)
+  updatedAt  DateTime @default(now())
+  promoted   Boolean  @default(false)
+}
+
+model Stage2UserFailed {
+  username   String
+  hostedLink String
+  email      String   @unique
+  grade      Int      @default(0)
+  updatedAt  DateTime @default(now())
+}
