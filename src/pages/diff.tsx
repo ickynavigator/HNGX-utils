@@ -140,7 +140,7 @@ const Page = () => {
         ))}
       </Group>
 
-      <Group>
+      <Group mb="xl">
         <Checkbox
           mt="md"
           label="Show the tables"
