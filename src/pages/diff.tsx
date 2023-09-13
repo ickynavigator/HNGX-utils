@@ -11,12 +11,12 @@ import { parseCsv } from '~/utils/csvHelpers';
 const userSchema = z.object({
   username: z.string().min(1),
   email: z.string().min(1),
-  status: z.string().min(1),
-  'has-2fa': z.string(),
-  userid: z.string().min(1),
-  fullname: z.string().min(1),
-  displayname: z.string().min(1).optional(),
-  timezone: z.string().min(1),
+  // status: z.string().min(1),
+  // 'has-2fa': z.string(),
+  // userid: z.string().min(1),
+  // fullname: z.string().min(1),
+  // displayname: z.string().min(1).optional(),
+  // timezone: z.string().min(1),
 });
 type UserSchema = z.infer<typeof userSchema>;
 
@@ -145,7 +145,12 @@ const Page = () => {
               Run Diff
             </Button>
 
-            <Button color="yellow" onClick={() => form.reset()}>
+            <Button
+              color="yellow"
+              onClick={() => {
+                form.reset();
+              }}
+            >
               Clear all
             </Button>
           </Group>
