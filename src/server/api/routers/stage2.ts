@@ -11,7 +11,6 @@ export const user = z.object({
 
 export const emailSchema = z.object({ email: z.string() });
 export const emailsSchema = z.object({ emails: z.array(z.string()) });
-export const usernameSchema = z.object({ username: z.string() });
 export const usersSchema = z.object({ users: z.array(user) });
 
 export const querySchema = z
@@ -102,14 +101,10 @@ export const stage2Router = createTRPCRouter({
   stageGetFailed: P.query(async ({ ctx }) => {
     return await ctx.prisma.stage2UserFailed.findMany();
   }),
-  stageDeleteFailed: P.input(usernameSchema).mutation(
-    async ({ input, ctx }) => {
-      const { username } = input;
-      await ctx.prisma.stage1UserFailed.delete({
-        where: { username },
-      });
-    },
-  ),
+  stageDeleteFailed: P.input(emailSchema).mutation(async ({ input, ctx }) => {
+    const { email } = input;
+    await ctx.prisma.stage1UserFailed.delete({ where: { email } });
+  }),
   stageDeleteAllFailed: P.mutation(async ({ ctx }) => {
     await ctx.prisma.stage2UserFailed.deleteMany();
   }),
