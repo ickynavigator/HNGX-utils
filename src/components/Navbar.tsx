@@ -6,8 +6,8 @@ import {
   rem,
   type NavbarProps,
 } from '@mantine/core';
-import { IconNumber1, IconNumber2 } from '@tabler/icons-react';
-import { LinksGroup } from './LinksGroup';
+import { IconNumber1, IconNumber2, IconTool } from '@tabler/icons-react';
+import { LinksGroup, type LinksGroupProps } from './LinksGroup';
 
 const useStyles = createStyles(theme => ({
   footer: {
@@ -48,7 +48,13 @@ const pageGenerate = (
   ];
 };
 
-const data = [
+const data: LinksGroupProps[] = [
+  {
+    label: 'Tools',
+    icon: IconTool,
+    initiallyOpened: true,
+    links: [{ label: 'Diff', link: 'diff' }],
+  },
   ...pageGenerate('1', IconNumber1),
   ...pageGenerate('2', IconNumber2),
 ];
