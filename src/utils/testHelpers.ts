@@ -2,6 +2,7 @@ import puppeteer, {
   type Browser,
   type PuppeteerLaunchOptions,
 } from 'puppeteer';
+import { env } from '~/env.mjs';
 
 const MINIMAL_ARGS = [
   '--autoplay-policy=user-gesture-required',
@@ -294,7 +295,10 @@ export const getRatedMovieDetails = async () => {
     'https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1';
   const options = {
     method: 'GET',
-    headers: { accept: 'application/json', Authorization: 'Bearer dadada' },
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${env.IMDB_API_KEY}`,
+    },
   };
 
   const res = await fetch(url, options);
@@ -307,7 +311,10 @@ export const getMovieDetails = async (id: string | number) => {
   const url = `https://api.themoviedb.org/3/movie/${id}?language=en-US`;
   const options = {
     method: 'GET',
-    headers: { accept: 'application/json', Authorization: 'Bearer dadada' },
+    headers: {
+      accept: 'application/json',
+      Authorization: `Bearer ${env.IMDB_API_KEY}`,
+    },
   };
 
   const res = await fetch(url, options);
