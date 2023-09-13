@@ -9,6 +9,7 @@ import { IconUpload, IconX } from '@tabler/icons-react';
 interface ICustomDropzoneProps {
   type?: string[];
   size?: number;
+  max?: number;
 
   children: React.ReactNode;
   onDrop: (files: FileWithPath[]) => void;
@@ -18,6 +19,7 @@ interface ICustomDropzoneProps {
 const CustomDropzone = (props: ICustomDropzoneProps) => {
   const {
     type,
+    max = 1,
     size = 3 * 1024 ** 2,
     children,
     onDrop,
@@ -31,7 +33,7 @@ const CustomDropzone = (props: ICustomDropzoneProps) => {
       onDrop={onDrop}
       onReject={onReject}
       maxSize={size}
-      maxFiles={1}
+      maxFiles={max}
       accept={type}
       my="lg"
       {...others}
