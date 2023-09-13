@@ -23,7 +23,7 @@ export const toolsRouter = createTRPCRouter({
 
     const diffed =
       diffedArr.length > 0
-        ? `username,email\n ${diffedArr
+        ? `username,email\n${diffedArr
             .map(v => `${v.username.trim()},${v.email.trim()}`)
             .join('\n')}`
         : '';
