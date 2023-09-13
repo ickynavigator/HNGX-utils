@@ -103,7 +103,7 @@ export const stage2Router = createTRPCRouter({
   }),
   stageDeleteFailed: P.input(emailSchema).mutation(async ({ input, ctx }) => {
     const { email } = input;
-    await ctx.prisma.stage1UserFailed.delete({ where: { email } });
+    await ctx.prisma.stage2UserFailed.delete({ where: { email } });
   }),
   stageDeleteAllFailed: P.mutation(async ({ ctx }) => {
     await ctx.prisma.stage2UserFailed.deleteMany();
@@ -116,17 +116,17 @@ export const stage2Router = createTRPCRouter({
       input: { users },
       ctx,
     } = opts;
-    await ctx.prisma.stage1Pending.createMany({ data: users });
+    await ctx.prisma.stage2Pending.createMany({ data: users });
   }),
   stageGetPending: P.query(async ({ ctx }) => {
-    return await ctx.prisma.stage1Pending.findMany();
+    return await ctx.prisma.stage2Pending.findMany();
   }),
   stageDeletePending: P.input(emailSchema).mutation(async ({ input, ctx }) => {
     const { email } = input;
-    await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
+    await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
   }),
   stageDeleteAllPending: P.mutation(async ({ ctx }) => {
-    return await ctx.prisma.stage1Pending.deleteMany();
+    return await ctx.prisma.stage2Pending.deleteMany();
   }),
   stageRunPending: P.mutation(async ({ ctx }) => {
     const users = await ctx.prisma.stage2Pending.findMany();
@@ -179,13 +179,13 @@ export const stage2Router = createTRPCRouter({
     console.debug('done');
   }),
   stagePromoteAll: P.input(querySchema).mutation(async ({ ctx }) => {
-    await ctx.prisma.stage1User.updateMany({ data: { promoted: true } });
+    await ctx.prisma.stage2User.updateMany({ data: { promoted: true } });
   }),
   stagePromoteSpecific: P.input(emailsSchema).mutation(
     async ({ input, ctx }) => {
       const { emails } = input;
 
-      await ctx.prisma.stage1User.updateMany({
+      await ctx.prisma.stage2User.updateMany({
         where: { email: { in: emails } },
         data: { promoted: true },
       });
