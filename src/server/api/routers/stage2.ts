@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure as P } from '~/server/api/trpc';
 import { promiseAllInBatches } from '~/utils/general';
-import { getBrowser, stage1Grade } from '~/utils/testHelpers';
+import { getBrowser, stage2Grade } from '~/utils/testHelpers';
 
 export const user = z.object({
   username: z.string(),
@@ -18,11 +18,68 @@ export const querySchema = z
   .object({ query: z.object({ promoted: z.boolean().optional() }).optional() })
   .optional();
 
+const MAX_SCORE = 10;
+
 export const stage2Router = createTRPCRouter({
-  stage: P.input(usersSchema).mutation(() => {
+  stage: P.input(usersSchema).mutation(async ({ ctx, input }) => {
     const passedArr: string[] = [];
     const failedArr: string[] = [];
-    const pendingArr: z.infer<typeof user>[] = [];
+    const pendingArr: typeof input.users = [];
+
+    console.debug('start');
+
+    const browser = await getBrowser();
+
+    async function graderCB(item: (typeof input.users)[number]) {
+      const user = {
+        username: item.username,
+        link: item.hostedLink,
+        email: item.email,
+      };
+      await stage2Grade(browser, user, {
+        firstCheck: async ({ email }) => {
+          const user = await ctx.prisma.stage2User.findFirst({
+            where: { email, grade: { equals: MAX_SCORE } },
+          });
+
+          if (user != null) {
+            await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
+            return true;
+          }
+
+          return false;
+        },
+        passed: async ({ username, email, grade, link }) => {
+          passedArr.push(`${username},${email},${grade}`);
+
+          await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
+          await ctx.prisma.stage2UserFailed.deleteMany({ where: { email } });
+          await ctx.prisma.stage2User.upsert({
+            where: { email },
+            create: { username, email, hostedLink: link, grade },
+            update: { username, email, hostedLink: link, grade },
+          });
+        },
+        failed: async ({ username, email, grade, link }) => {
+          failedArr.push(`${username},${link},${email},${grade}`);
+
+          await ctx.prisma.stage2User.deleteMany({ where: { email } });
+          await ctx.prisma.stage2UserFailed.upsert({
+            where: { email },
+            create: { username, email, hostedLink: link, grade },
+            update: { username, email, hostedLink: link, grade },
+          });
+        },
+        pending: ({ username, email, link }) => {
+          pendingArr.push({ username, hostedLink: link, email });
+        },
+      });
+    }
+    await promiseAllInBatches(graderCB, input.users, 50);
+
+    await browser.close();
+
+    console.debug('done');
 
     const passed = passedArr.join('\n');
     const failed = failedArr.join('\n');
@@ -77,51 +134,51 @@ export const stage2Router = createTRPCRouter({
     return await ctx.prisma.stage1Pending.deleteMany();
   }),
   stageRunPending: P.mutation(async ({ ctx }) => {
-    const users = await ctx.prisma.stage1Pending.findMany();
+    const users = await ctx.prisma.stage2Pending.findMany();
     console.debug('start');
 
     const browser = await getBrowser();
-    await promiseAllInBatches(
-      async item => {
-        await stage1Grade(browser, item.username, item.hostedLink, item.email, {
-          firstCheck: async ({ email }) => {
-            const user = await ctx.prisma.stage1User.findFirst({
-              where: { email, grade: { equals: 10 } },
-            });
 
-            if (user != null) {
-              await ctx.prisma.stage1Pending.deleteMany({
-                where: { email },
-              });
-              return true;
-            }
+    async function graderCB(item: (typeof users)[number]) {
+      const user = {
+        username: item.username,
+        link: item.hostedLink,
+        email: item.email,
+      };
+      await stage2Grade(browser, user, {
+        firstCheck: async ({ email }) => {
+          const user = await ctx.prisma.stage2User.findFirst({
+            where: { email, grade: { equals: MAX_SCORE } },
+          });
 
-            return false;
-          },
-          passed: async ({ username, email, grade, link }) => {
-            await ctx.prisma.stage1Pending.deleteMany({ where: { email } });
-            await ctx.prisma.stage1UserFailed.deleteMany({
-              where: { email },
-            });
-            await ctx.prisma.stage1User.upsert({
-              where: { email },
-              create: { username, email, hostedLink: link, grade },
-              update: { username, email, hostedLink: link, grade },
-            });
-          },
-          failed: async ({ username, email, grade, link }) => {
-            await ctx.prisma.stage1User.deleteMany({ where: { email } });
-            await ctx.prisma.stage1UserFailed.upsert({
-              where: { email },
-              create: { username, email, hostedLink: link, grade },
-              update: { username, email, hostedLink: link, grade },
-            });
-          },
-        });
-      },
-      users,
-      50,
-    );
+          if (user != null) {
+            await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
+            return true;
+          }
+
+          return false;
+        },
+        passed: async ({ username, email, grade, link }) => {
+          await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
+          await ctx.prisma.stage2UserFailed.deleteMany({ where: { email } });
+          await ctx.prisma.stage2User.upsert({
+            where: { email },
+            create: { username, email, hostedLink: link, grade },
+            update: { username, email, hostedLink: link, grade },
+          });
+        },
+        failed: async ({ username, email, grade, link }) => {
+          await ctx.prisma.stage2User.deleteMany({ where: { email } });
+          await ctx.prisma.stage2UserFailed.upsert({
+            where: { email },
+            create: { username, email, hostedLink: link, grade },
+            update: { username, email, hostedLink: link, grade },
+          });
+        },
+      });
+    }
+    await promiseAllInBatches(graderCB, users, 50);
+
     await browser.close();
 
     console.debug('done');

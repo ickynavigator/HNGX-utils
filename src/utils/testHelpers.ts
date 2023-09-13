@@ -59,6 +59,19 @@ export const getBrowser = async (options?: PuppeteerLaunchOptions) => {
   return browser;
 };
 
+type Response = {
+  username: string;
+  link: string;
+  email: string;
+  grade: number;
+};
+type CB = {
+  passed?: (val: Response) => void | Promise<void>;
+  failed?: (val: Response) => void | Promise<void>;
+  pending?: (val: Omit<Response, 'grade'>) => void | Promise<void>;
+  firstCheck?: (val: Omit<Response, 'grade'>) => boolean | Promise<boolean>;
+};
+
 //#region Stage 1
 export const getDayOfTheWeek = (day: number) => {
   switch (day) {
@@ -84,18 +97,6 @@ export const isNumberInRange = (check: number, num: number, range: number) => {
   return check >= num - range && check <= num + range;
 };
 
-type Response = {
-  username: string;
-  link: string;
-  email: string;
-  grade: number;
-};
-type CB = {
-  passed?: (val: Response) => void | Promise<void>;
-  failed?: (val: Response) => void | Promise<void>;
-  pending?: (val: Omit<Response, 'grade'>) => void | Promise<void>;
-  firstCheck?: (val: Omit<Response, 'grade'>) => boolean | Promise<boolean>;
-};
 export async function stage1Grade(
   browser: Browser,
   username: string,
@@ -205,5 +206,15 @@ export async function stage1Grade(
   }
 
   await page.close();
+}
+//#endregion
+
+//#region Stage 2
+export async function stage2Grade(
+  _browser: Browser,
+  _user: Omit<Response, 'grade'>,
+  _cb?: CB,
+) {
+  return await Promise.resolve();
 }
 //#endregion
