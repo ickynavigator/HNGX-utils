@@ -71,7 +71,7 @@ const Page = () => {
           }}
           loading={deleteStageFailedAll.isLoading}
         >
-          Delete all - {`(${stage.data?.length})`}
+          Delete All - {`(${stage.data?.length})`}
         </Button>
         <Button
           disabled={stage.data == undefined || stage.data.length == 0}

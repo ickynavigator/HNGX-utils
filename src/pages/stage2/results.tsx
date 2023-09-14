@@ -78,9 +78,10 @@ const Page = () => {
           }}
           loading={deleteStageResult.isLoading}
         >
-          Delete all - {`(${stage.data?.length})`}
+          Delete All - {`(${stage.data?.length})`}
         </Button>
         <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
           onClick={() => {
             handleCSVdownload();
           }}
@@ -88,6 +89,7 @@ const Page = () => {
           Download CSV
         </Button>
         <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
           onClick={() => {
             promoteAllStage.mutate();
           }}

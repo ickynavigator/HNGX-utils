@@ -67,6 +67,7 @@ const Page = () => {
     <>
       <Group mb="lg">
         <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
           onClick={() => {
             handleCSVdownload();
           }}
@@ -74,6 +75,7 @@ const Page = () => {
           Download CSV - {`(${stage.data?.length})`}
         </Button>
         <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
           onClick={() => {
             promoteAllStage.mutate({ query: { promoted: false } });
           }}
