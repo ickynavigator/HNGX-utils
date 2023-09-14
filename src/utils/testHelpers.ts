@@ -323,11 +323,6 @@ export const getMovieDetails = async (id: string | number) => {
   return data;
 };
 
-const paginatedMovies =
-  global.paginatedMovies ?? (await getRatedMovieDetails());
-const movie =
-  global.movie ?? (await getMovieDetails(paginatedMovies.results[0]!.id));
-
 export async function stage2Grade(
   browser: Browser,
   user: Omit<Response, 'grade'>,
@@ -365,6 +360,11 @@ export async function stage2Grade(
   const { username, link, email } = user;
 
   try {
+    const paginatedMovies =
+      global.paginatedMovies ?? (await getRatedMovieDetails());
+    const movie =
+      global.movie ?? (await getMovieDetails(paginatedMovies.results[0]!.id));
+
     page.on('dialog', dialog => {
       void dialog.accept();
     });
