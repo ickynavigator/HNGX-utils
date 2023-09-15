@@ -52,7 +52,6 @@ const data: LinksGroupProps[] = [
   {
     label: 'Tools',
     icon: IconTool,
-    initiallyOpened: true,
     links: [{ label: 'Diff', link: 'diff' }],
   },
   ...pageGenerate('1', IconNumber1),

@@ -40,6 +40,13 @@ const useStyles = createStyles(theme => ({
   },
 }));
 
+const formSchema = z.object({
+  'Slack Name': z.string().min(1),
+  'Slack Email Address': z.string().min(1),
+  'Hosted link': z.string().min(1),
+});
+type FormSchema = z.infer<typeof formSchema>;
+
 const userSchema = z.object({
   username: z.string().min(1),
   hostedLink: z.string().min(1),
@@ -97,11 +104,9 @@ const Page = () => {
     if (form.values.users.find(u => u.email === user.email)) return;
     form.insertListItem('users', user);
   };
-  const removeUser = (username: UserSchema['username']) => {
-    form.setFieldValue(
-      'users',
-      form.values.users.filter(user => user.username !== username),
-    );
+  const removeUser = (email: UserSchema['email']) => {
+    const users = form.values.users.filter(user => user.email !== email);
+    form.setFieldValue('users', users);
   };
 
   return (
@@ -119,15 +124,19 @@ const Page = () => {
           reader.onload = e => {
             const csv = e?.target?.result;
             if (typeof csv === 'string') {
-              const results = parseCsv<keyof UserSchema>({
+              const results = parseCsv<keyof FormSchema>({
                 data: csv,
                 headerExists: true,
               });
               results.forEach(result => {
                 if (result !== null && Object.keys(result).length > 0) {
-                  const parsed = userSchema.safeParse(result);
+                  const parsed = formSchema.safeParse(result);
                   if (parsed.success) {
-                    users.push(parsed.data);
+                    users.push({
+                      username: parsed.data['Slack Name'],
+                      hostedLink: parsed.data['Hosted link'],
+                      email: parsed.data['Slack Email Address'],
+                    });
                   }
                 }
               });
@@ -254,7 +263,7 @@ const Page = () => {
           >
             {users => {
               return users.map(user => (
-                <tr key={user.username}>
+                <tr key={user.email}>
                   <td>{user.username}</td>
                   <td>{user.hostedLink}</td>
                   <td>{user.email}</td>
@@ -262,7 +271,7 @@ const Page = () => {
                     <Group position="right">
                       <ActionIcon
                         color="red"
-                        onClick={() => removeUser(user.username)}
+                        onClick={() => removeUser(user.email)}
                       >
                         <IconTrash />
                       </ActionIcon>

@@ -8,7 +8,7 @@ export const env = createEnv({
    */
   server: {
     NODE_ENV: z.enum(['development', 'test', 'production']),
-    IMDB_API_KEY: z.string().optional(),
+    IMDB_API_KEY: z.string(),
     DATABASE_URL: z.string(),
   },
 
