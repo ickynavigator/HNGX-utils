@@ -56,11 +56,17 @@ const Page = () => {
   };
 
   const handleCSVdownload = () => {
-    const data = `username,email,grade\n ${stage.data
+    const data = `username,email,grade\n${stage.data
       .map(v => `${v.username.trim()},${v.email.trim()},${v.grade}`)
       .join('\n')}`;
 
     handleDownload(data, 'passed');
+  };
+
+  const handleOnlyEmailDownload = () => {
+    const data = stage.data.map(v => `${v.email.trim()}`).join('\n');
+
+    handleDownload(data, 'passed-emails');
   };
 
   return (
@@ -72,7 +78,15 @@ const Page = () => {
             handleCSVdownload();
           }}
         >
-          Download CSV - {`(${stage.data?.length})`}
+          Download CSV - ({stage.data.length})
+        </Button>
+        <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
+          onClick={() => {
+            handleOnlyEmailDownload();
+          }}
+        >
+          Download CSV (only emails) - ({stage.data.length})
         </Button>
         <Button
           disabled={stage.data == undefined || stage.data.length == 0}
