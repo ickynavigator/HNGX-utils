@@ -143,7 +143,7 @@ export const LinksGroup = ({
           )}
         </Group>
       </UnstyledButton>
-      {hasLinks ? <Collapse in={opened}>{items}</Collapse> : null}
+      {hasLinks && opened ? <Collapse in={opened}>{items}</Collapse> : null}
     </>
   );
 };
