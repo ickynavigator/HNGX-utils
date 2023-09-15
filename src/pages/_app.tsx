@@ -1,4 +1,5 @@
 import { MantineProvider } from '@mantine/core';
+import { ModalsProvider } from '@mantine/modals';
 import { type AppType } from 'next/app';
 import Head from 'next/head';
 import Layout from '~/components/Layout';
@@ -23,10 +24,12 @@ const MyApp: AppType = props => {
           colorScheme: 'light',
         }}
       >
-        <RouterTransition />
-        <Layout>
-          <Component {...pageProps} />
-        </Layout>
+        <ModalsProvider>
+          <RouterTransition />
+          <Layout>
+            <Component {...pageProps} />
+          </Layout>
+        </ModalsProvider>
       </MantineProvider>
     </>
   );
