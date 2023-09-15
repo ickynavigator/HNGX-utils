@@ -1,22 +1,32 @@
-import { ActionIcon, Button, Group, Stack, Text, Title } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Checkbox,
+  Group,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { IconTrash } from '@tabler/icons-react';
+import { useState } from 'react';
 import { z } from 'zod';
 import CustomDropzone from '~/components/Dropzone';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { api } from '~/utils/api';
 import { parseCsv } from '~/utils/csvHelpers';
+import { differ } from '~/utils/tools';
 
 const userSchema = z.object({
   username: z.string().min(1),
   email: z.string().min(1),
-  status: z.string().min(1),
-  'has-2fa': z.string(),
-  userid: z.string().min(1),
-  fullname: z.string().min(1),
-  displayname: z.string().min(1).optional(),
-  timezone: z.string().min(1),
+  // status: z.string().min(1),
+  // 'has-2fa': z.string(),
+  // userid: z.string().min(1),
+  // fullname: z.string().min(1),
+  // displayname: z.string().min(1).optional(),
+  // timezone: z.string().min(1),
 });
 type UserSchema = z.infer<typeof userSchema>;
 
@@ -30,7 +40,15 @@ type FormSchema = z.infer<typeof formSchema>;
 const types = ['general', 'nextStage'] as const;
 
 const Page = () => {
-  const diff = api.tools.diff.useMutation();
+  const [results, setResults] = useState('');
+  const diff = api.tools.diff.useMutation({
+    onSuccess: data => {
+      setResults(data.diffed);
+    },
+  });
+  const [showTable, setShowTable] = useState(false);
+  const [localLoad, setLocalLoad] = useState(false);
+  const [runLocal, setRunLocal] = useState(true);
 
   const form = useForm<FormSchema>({
     initialValues: {
@@ -63,6 +81,13 @@ const Page = () => {
     const users = form.values[type].filter(u => u.email !== email);
 
     form.setFieldValue(type, users);
+  };
+
+  const localRunner = () => {
+    setLocalLoad(true);
+    const diffed = differ(form.values.general, form.values.nextStage);
+    setResults(diffed);
+    setLocalLoad(false);
   };
 
   return (
@@ -118,67 +143,92 @@ const Page = () => {
         ))}
       </Group>
 
+      <Group mb="xl">
+        <Checkbox
+          mt="md"
+          label="Show the tables"
+          checked={showTable}
+          onChange={event => setShowTable(event.currentTarget.checked)}
+        />
+        <Checkbox
+          mt="md"
+          label="Run on device (if the list is too large)"
+          checked={runLocal}
+          onChange={event => setRunLocal(event.currentTarget.checked)}
+        />
+      </Group>
+
       {form.values.general.length > 0 && (
         <>
           <Group position="right" mb="xl" grow>
-            {(['diffed'] as const).map(type => {
-              return (
-                <Button
-                  key={type}
-                  disabled={diff.data == null || diff.data[type].length === 0}
-                  color="green"
-                  onClick={() => {
-                    if (diff.data == undefined) return;
-                    handleDownload(diff.data[type], type);
-                  }}
-                >
-                  Download {type}
-                </Button>
-              );
-            })}
+            <Button
+              disabled={results.length === 0}
+              color="green"
+              onClick={() => {
+                handleDownload(results, 'diffed');
+              }}
+            >
+              Download diffed
+            </Button>
 
             <Button
               color="green"
-              onClick={() => diff.mutate(form.values)}
-              loading={diff.isLoading}
+              onClick={() => {
+                if (runLocal) {
+                  localRunner();
+                } else {
+                  diff.mutate({
+                    general: form.values.general,
+                    nextStage: form.values.nextStage,
+                  });
+                }
+              }}
+              loading={diff.isLoading || localLoad}
             >
               Run Diff
             </Button>
 
-            <Button color="yellow" onClick={() => form.reset()}>
+            <Button
+              color="yellow"
+              onClick={() => {
+                form.reset();
+              }}
+            >
               Clear all
             </Button>
           </Group>
 
-          <Group grow align="start">
-            {types.map(type => (
-              <CustomTable
-                key={type}
-                headers={['username', 'email']}
-                data={form.values[type]}
-                showActionsRow
-              >
-                {users => {
-                  return users.map(user => (
-                    <tr key={user.username}>
-                      <td>{user.username}</td>
-                      <td>{user.email}</td>
-                      <td>
-                        <Group position="right">
-                          <ActionIcon
-                            color="red"
-                            onClick={() => removeUser(user.email, type)}
-                          >
-                            <IconTrash />
-                          </ActionIcon>
-                        </Group>
-                      </td>
-                    </tr>
-                  ));
-                }}
-              </CustomTable>
-            ))}
-          </Group>
+          {showTable ? (
+            <Group grow align="start">
+              {types.map(type => (
+                <CustomTable
+                  key={type}
+                  headers={['username', 'email']}
+                  data={form.values[type]}
+                  showActionsRow
+                >
+                  {users => {
+                    return users.map(user => (
+                      <tr key={user.username}>
+                        <td>{user.username}</td>
+                        <td>{user.email}</td>
+                        <td>
+                          <Group position="right">
+                            <ActionIcon
+                              color="red"
+                              onClick={() => removeUser(user.email, type)}
+                            >
+                              <IconTrash />
+                            </ActionIcon>
+                          </Group>
+                        </td>
+                      </tr>
+                    ));
+                  }}
+                </CustomTable>
+              ))}
+            </Group>
+          ) : null}
         </>
       )}
     </>
