@@ -9,6 +9,7 @@ import {
 import { IconCheck } from '@tabler/icons-react';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
+import { useConfirmationModal } from '~/hooks/useConfirmationModal';
 import { api } from '~/utils/api';
 
 const Page = () => {
@@ -29,6 +30,10 @@ const Page = () => {
     onSuccess: async () => {
       await utils.stage1.stageGet.invalidate();
     },
+  });
+
+  const confirmDelete = useConfirmationModal(() => {
+    deleteStage1Result.mutate();
   });
 
   if (stage1.isLoading) {
@@ -73,9 +78,7 @@ const Page = () => {
         <Button
           disabled={stage1.data == undefined || stage1.data.length == 0}
           color="red"
-          onClick={() => {
-            deleteStage1Result.mutate();
-          }}
+          onClick={confirmDelete}
           loading={deleteStage1Result.isLoading}
         >
           Delete all - {`(${stage1.data?.length})`}

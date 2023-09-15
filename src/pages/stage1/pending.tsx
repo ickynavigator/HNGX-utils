@@ -2,6 +2,7 @@ import { ActionIcon, Button, Center, Group, Loader } from '@mantine/core';
 import { IconTrash } from '@tabler/icons-react';
 import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
+import { useConfirmationModal } from '~/hooks/useConfirmationModal';
 import { api } from '~/utils/api';
 
 const Page = () => {
@@ -24,6 +25,10 @@ const Page = () => {
     onSuccess: async () => {
       await utils.stage1.stageGetPending.invalidate();
     },
+  });
+
+  const confirmDelete = useConfirmationModal(() => {
+    stage1DeleteAll.mutate();
   });
 
   if (stage1.isLoading) {
@@ -61,9 +66,7 @@ const Page = () => {
         <Button
           disabled={stage1.data == undefined || stage1.data.length == 0}
           color="red"
-          onClick={() => {
-            stage1DeleteAll.mutate();
-          }}
+          onClick={confirmDelete}
           loading={stage1DeleteAll.isLoading}
         >
           Delete All {`(${stage1.data?.length})`}
