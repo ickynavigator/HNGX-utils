@@ -410,14 +410,15 @@ export async function stage2Grade(
 
     const firstMovie = paginatedMovies.results[0]!;
     const title = await getElementTextContent('movie-title');
-    if (title?.toLowerCase().includes(firstMovie?.title?.toLowerCase())) {
+    if (title?.toLowerCase().includes(firstMovie.title.toLowerCase())) {
       grade += 1;
     }
 
     const release_date = await getElementTextContent('movie-release-date');
     if (release_date) {
       const time = new Date(firstMovie.release_date).getTime();
-      if (isNumberInRange(time, Number(release_date), UTC_RANGE)) {
+      const correctTime = new Date(release_date).getTime();
+      if (isNumberInRange(time, correctTime, UTC_RANGE)) {
         grade += 1;
       }
     }
@@ -436,7 +437,9 @@ export async function stage2Grade(
     const movieReleaseDate = await getElementTextContent('movie-release-date');
     if (movieReleaseDate) {
       const time = new Date(movie.release_date).getTime();
-      if (isNumberInRange(time, Number(movieReleaseDate), UTC_RANGE)) {
+      const correctTime = new Date(movieReleaseDate).getTime();
+      if (isNumberInRange(time, correctTime, UTC_RANGE)) {
+        console.log('release date');
         grade += 1;
       }
     }
@@ -447,7 +450,7 @@ export async function stage2Grade(
     }
 
     const movieOverview = await getElementTextContent('movie-overview');
-    if (movieOverview?.toLowerCase().includes(String(movie.overview))) {
+    if (movieOverview?.toLowerCase().includes(movie.overview.toLowerCase())) {
       grade += 1;
     }
 
