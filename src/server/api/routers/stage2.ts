@@ -172,7 +172,7 @@ export const stage2Router = createTRPCRouter({
         },
       });
     }
-    await promiseAllInBatches(graderCB, users, 50);
+    await promiseAllInBatches(graderCB, users, 20);
 
     await browser.close();
 
