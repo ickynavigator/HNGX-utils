@@ -31,6 +31,11 @@ const Page = () => {
       await utils.stage2.stageGet.invalidate();
     },
   });
+  const stageRunPassed = api.stage2.stageRunPassed.useMutation({
+    onSuccess: async () => {
+      await utils.stage2.stageGet.invalidate();
+    },
+  });
 
   const confirmDelete = useConfirmationModal(() => {
     deleteStageResult.mutate();
@@ -100,6 +105,16 @@ const Page = () => {
           loading={promoteAllStage.isLoading}
         >
           Mark all as promoted
+        </Button>
+        <Button
+          disabled={stage.data == undefined || stage.data.length == 0}
+          onClick={() => {
+            stageRunPassed.mutate();
+          }}
+          color="yellow"
+          loading={stageRunPassed.isLoading}
+        >
+          Run Tests again
         </Button>
       </Group>
       <CustomTable

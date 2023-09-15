@@ -1,5 +1,6 @@
+import type { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
-import { createTRPCRouter, publicProcedure as P } from '~/server/api/trpc';
+import { publicProcedure as P, createTRPCRouter } from '~/server/api/trpc';
 import { promiseAllInBatches } from '~/utils/general';
 import { getBrowser, stage2Grade } from '~/utils/testHelpers';
 
@@ -17,7 +18,55 @@ export const querySchema = z
   .object({ query: z.object({ promoted: z.boolean().optional() }).optional() })
   .optional();
 
-const MAX_SCORE = 10;
+const MAX_SCORE = 11;
+
+const grading = async (users: z.infer<typeof user>[], prisma: PrismaClient) => {
+  console.debug('start');
+  const browser = await getBrowser();
+
+  async function graderCB(item: (typeof users)[number]) {
+    const user = {
+      username: item.username,
+      link: item.hostedLink,
+      email: item.email,
+    };
+    await stage2Grade(browser, user, {
+      firstCheck: async ({ email }) => {
+        const user = await prisma.stage2User.findFirst({
+          where: { email, grade: { equals: MAX_SCORE } },
+        });
+
+        if (user != null) {
+          await prisma.stage2Pending.deleteMany({ where: { email } });
+          return true;
+        }
+
+        return false;
+      },
+      passed: async ({ username, email, grade, link }) => {
+        await prisma.stage2Pending.deleteMany({ where: { email } });
+        await prisma.stage2UserFailed.deleteMany({ where: { email } });
+        await prisma.stage2User.upsert({
+          where: { email },
+          create: { username, email, hostedLink: link, grade },
+          update: { username, email, hostedLink: link, grade },
+        });
+      },
+      failed: async ({ username, email, grade, link }) => {
+        await prisma.stage2User.deleteMany({ where: { email } });
+        await prisma.stage2UserFailed.upsert({
+          where: { email },
+          create: { username, email, hostedLink: link, grade },
+          update: { username, email, hostedLink: link, grade },
+        });
+      },
+    });
+  }
+  await promiseAllInBatches(graderCB, users, 20);
+
+  await browser.close();
+  console.debug('done');
+};
 
 export const stage2Router = createTRPCRouter({
   stage: P.input(usersSchema).mutation(async ({ ctx, input }) => {
@@ -130,53 +179,11 @@ export const stage2Router = createTRPCRouter({
   }),
   stageRunPending: P.mutation(async ({ ctx }) => {
     const users = await ctx.prisma.stage2Pending.findMany();
-    console.debug('start');
-
-    const browser = await getBrowser();
-
-    async function graderCB(item: (typeof users)[number]) {
-      const user = {
-        username: item.username,
-        link: item.hostedLink,
-        email: item.email,
-      };
-      await stage2Grade(browser, user, {
-        firstCheck: async ({ email }) => {
-          const user = await ctx.prisma.stage2User.findFirst({
-            where: { email, grade: { equals: MAX_SCORE } },
-          });
-
-          if (user != null) {
-            await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
-            return true;
-          }
-
-          return false;
-        },
-        passed: async ({ username, email, grade, link }) => {
-          await ctx.prisma.stage2Pending.deleteMany({ where: { email } });
-          await ctx.prisma.stage2UserFailed.deleteMany({ where: { email } });
-          await ctx.prisma.stage2User.upsert({
-            where: { email },
-            create: { username, email, hostedLink: link, grade },
-            update: { username, email, hostedLink: link, grade },
-          });
-        },
-        failed: async ({ username, email, grade, link }) => {
-          await ctx.prisma.stage2User.deleteMany({ where: { email } });
-          await ctx.prisma.stage2UserFailed.upsert({
-            where: { email },
-            create: { username, email, hostedLink: link, grade },
-            update: { username, email, hostedLink: link, grade },
-          });
-        },
-      });
-    }
-    await promiseAllInBatches(graderCB, users, 20);
-
-    await browser.close();
-
-    console.debug('done');
+    await grading(users, ctx.prisma);
+  }),
+  stageRunPassed: P.mutation(async ({ ctx }) => {
+    const users = await ctx.prisma.stage2User.findMany();
+    await grading(users, ctx.prisma);
   }),
   stagePromoteAll: P.input(querySchema).mutation(async ({ ctx }) => {
     await ctx.prisma.stage2User.updateMany({ data: { promoted: true } });
