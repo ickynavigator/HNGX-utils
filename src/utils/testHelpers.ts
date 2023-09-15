@@ -439,7 +439,6 @@ export async function stage2Grade(
       const time = new Date(movie.release_date).getTime();
       const correctTime = new Date(movieReleaseDate).getTime();
       if (isNumberInRange(time, correctTime, UTC_RANGE)) {
-        console.log('release date');
         grade += 1;
       }
     }
