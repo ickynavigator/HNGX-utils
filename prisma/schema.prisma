@@ -57,3 +57,8 @@ model Stage2UserFailed {
   grade      Int      @default(0)
   updatedAt  DateTime @default(now())
 }
+
+model SavingGrace3 {
+  username String   @id @unique
+  friends  String[]
+}
