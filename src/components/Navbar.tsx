@@ -52,7 +52,10 @@ const data: LinksGroupProps[] = [
   {
     label: 'Tools',
     icon: IconTool,
-    links: [{ label: 'Diff', link: 'diff' }],
+    links: [
+      { label: 'Diff', link: 'diff' },
+      { label: 'Grace - Stage 3', link: 'grace/stage3' },
+    ],
   },
   ...pageGenerate('1', IconNumber1),
   ...pageGenerate('2', IconNumber2),
