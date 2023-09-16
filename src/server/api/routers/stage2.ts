@@ -165,7 +165,10 @@ export const stage2Router = createTRPCRouter({
       input: { users },
       ctx,
     } = opts;
-    await ctx.prisma.stage2Pending.createMany({ data: users });
+    await ctx.prisma.stage2Pending.createMany({
+      data: users,
+      skipDuplicates: true,
+    });
   }),
   stageGetPending: P.query(async ({ ctx }) => {
     return await ctx.prisma.stage2Pending.findMany();
