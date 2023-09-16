@@ -44,7 +44,7 @@ const MINIMAL_ARGS = [
   '--shm-size=3gb',
 ];
 const DEFAULT_PROTOCOL_TIMEOUT = 1000 * 120;
-const PAGE_TIMEOUT = 1000 * 120;
+const PAGE_TIMEOUT = 1000 * 300;
 const PAGE_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36';
 
