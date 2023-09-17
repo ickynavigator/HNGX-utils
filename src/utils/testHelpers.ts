@@ -383,6 +383,9 @@ export async function stage2Grade(
     const getElementsByTestID = async (selector: string) => {
       return await page.$$(`[data-testid="${selector}"]`);
     };
+    const getPageLinkElement = async (id: string) => {
+      return await page.$(`[href*="/movies/${id}"]`);
+    };
 
     const getElementTextContent = async (selector: string) => {
       return await (
@@ -445,10 +448,18 @@ export async function stage2Grade(
       }
     }
 
-    const movieURL = `${url}/movies/${firstMovie.id}`;
-    navigationPromise = page.waitForNavigation();
-    await page.goto(movieURL, { waitUntil: 'networkidle2' });
-    await navigationPromise;
+    const movieButton = await getPageLinkElement(String(firstMovie.id));
+    if (movieButton) {
+      console.log(movieButton);
+      navigationPromise = page.waitForNavigation();
+      await movieButton.click();
+      await navigationPromise;
+    } else {
+      const movieURL = `${url}/movies/${firstMovie.id}`;
+      navigationPromise = page.waitForNavigation();
+      await page.goto(movieURL, { waitUntil: 'networkidle2' });
+      await navigationPromise;
+    }
     grade += 1;
 
     const page2Selectors = [
