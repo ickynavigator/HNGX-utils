@@ -62,7 +62,7 @@ const grading = async (users: z.infer<typeof user>[], prisma: PrismaClient) => {
       },
     });
   }
-  await promiseAllInBatches(graderCB, users, 20);
+  await promiseAllInBatches(graderCB, users, 30);
 
   await browser.close();
   console.debug('done');
