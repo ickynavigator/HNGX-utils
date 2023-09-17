@@ -44,7 +44,7 @@ const MINIMAL_ARGS = [
   '--shm-size=3gb',
 ];
 const DEFAULT_PROTOCOL_TIMEOUT = 1000 * 120;
-const PAGE_TIMEOUT = 1000 * 300;
+const PAGE_TIMEOUT = 1000 * 120;
 const PAGE_USER_AGENT =
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3419.0 Safari/537.36';
 
@@ -390,6 +390,28 @@ export async function stage2Grade(
       )?.evaluate(el => el.textContent);
     };
 
+    const selectors = {
+      movieCard: 'movie-card',
+      moviePoster: 'movie-poster',
+      movieTitle: 'movie-title',
+      movieReleaseDate: 'movie-release-date',
+      movieRuntime: 'movie-runtime',
+      movieOverview: 'movie-overview',
+    };
+
+    const page1Selectors = [
+      selectors.movieCard,
+      selectors.moviePoster,
+      selectors.movieTitle,
+      selectors.movieReleaseDate,
+    ];
+    await page
+      .waitForSelector(
+        page1Selectors.map(selector => `[data-testid="${selector}"]`).join(','),
+        { timeout: 1000 },
+      )
+      .catch(() => undefined);
+
     const cards = await getElementsByTestID('movie-card');
     if (cards.length >= 10) {
       grade += 1;
@@ -428,6 +450,19 @@ export async function stage2Grade(
     await page.goto(movieURL, { waitUntil: 'networkidle2' });
     await navigationPromise;
     grade += 1;
+
+    const page2Selectors = [
+      selectors.movieTitle,
+      selectors.movieReleaseDate,
+      selectors.movieRuntime,
+      selectors.movieOverview,
+    ];
+    await page
+      .waitForSelector(
+        page2Selectors.map(selector => `[data-testid="${selector}"]`).join(','),
+        { timeout: 1000 },
+      )
+      .catch(() => undefined);
 
     const movieTitle = await getElementTextContent('movie-title');
     if (movieTitle?.toLowerCase().includes(movie.title.toLowerCase())) {
@@ -470,5 +505,6 @@ export async function stage2Grade(
     await page.close();
     throw new Error(`Failed to grade - ${username}`);
   }
+  await page.close();
 }
 //#endregion
