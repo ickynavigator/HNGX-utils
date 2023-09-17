@@ -450,7 +450,6 @@ export async function stage2Grade(
 
     const movieButton = await getPageLinkElement(String(firstMovie.id));
     if (movieButton) {
-      console.log(movieButton);
       navigationPromise = page.waitForNavigation();
       await movieButton.click();
       await navigationPromise;
