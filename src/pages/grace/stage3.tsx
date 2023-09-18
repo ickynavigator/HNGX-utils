@@ -1,8 +1,17 @@
-import { ActionIcon, Button, Group, Tabs, Text } from '@mantine/core';
+import {
+  ActionIcon,
+  Button,
+  Center,
+  Group,
+  Loader,
+  Tabs,
+  Text,
+} from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { IconTrash } from '@tabler/icons-react';
 import { z } from 'zod';
 import CustomDropzone from '~/components/Dropzone';
+import CustomError from '~/components/Error';
 import CustomTable from '~/components/Table';
 import { useConfirmationModal } from '~/hooks/useConfirmationModal';
 import { api } from '~/utils/api';
@@ -12,6 +21,7 @@ const TabTypes = {
   Submission: 'submissions',
   Sorted: 'sorted',
   Uploads: 'uploads',
+  NoMention: 'no mentions',
 } as const;
 
 const correctString = z
@@ -50,10 +60,22 @@ const Page = () => {
     },
   });
   const sorted = api.grace3.getSavingGraceSorted.useQuery();
+  const noMention = api.grace3.getNoMentions.useQuery();
   const submission = api.grace3.getSavingGraceSubmissions.useQuery();
+  const sortSubmissions = api.grace3.runSavingGraceSorted.useMutation({
+    onSuccess: async () => {
+      await utils.grace3.getSavingGraceSorted.invalidate();
+      await utils.grace3.getNoMentions.invalidate();
+    },
+  });
   const deleteAll = api.grace3.deleteSavingGraceSubmissions.useMutation({
     onSuccess: async () => {
       await utils.grace3.getSavingGraceSubmissions.invalidate();
+    },
+  });
+  const deleteNoMentions = api.grace3.deleteSavingGraceSubmissions.useMutation({
+    onSuccess: async () => {
+      await utils.grace3.getNoMentions.invalidate();
     },
   });
 
@@ -67,6 +89,9 @@ const Page = () => {
   const confirmDelete = useConfirmationModal(() => {
     deleteAll.mutate();
   });
+  const confirmDeleteNoMentions = useConfirmationModal(() => {
+    deleteNoMentions.mutate();
+  });
 
   const addUser = (user: UserSchema) => {
     form.insertListItem('users', user);
@@ -76,10 +101,46 @@ const Page = () => {
     form.setFieldValue('users', users);
   };
 
+  const handleDownload = (data: string, filename: string) => {
+    const blob = new Blob([data], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+
+    a.setAttribute('hidden', '');
+    a.setAttribute('href', url);
+    a.setAttribute('download', `${filename}.csv`);
+    document.body.appendChild(a);
+    a.click();
+    return;
+  };
+
+  const downloadNoMentions = () => {
+    const data = `username\n${noMention.data
+      ?.map(user => user.username)
+      .join('\n')}`;
+
+    handleDownload(data, 'no-mentions');
+  };
+
+  if (sorted.isLoading || noMention.isLoading || submission.isLoading) {
+    return (
+      <Center h="100%">
+        <Loader />
+      </Center>
+    );
+  }
+  if (sorted.isError || noMention.isError || submission.isError) {
+    return (
+      <Center h="100%">
+        <CustomError />
+      </Center>
+    );
+  }
+
   return (
     <>
       <Tabs
-        defaultValue={TabTypes.Submission}
+        defaultValue={TabTypes.NoMention}
         keepMounted={false}
         variant="outline"
       >
@@ -92,7 +153,7 @@ const Page = () => {
         </Tabs.List>
 
         <Tabs.Panel value={TabTypes.Submission}>
-          {submission.data && submission.data.length > 0 && (
+          {submission.data && (
             <>
               <Group mb="xl">
                 <Button
@@ -101,6 +162,12 @@ const Page = () => {
                   color="red"
                 >
                   Delete All {`(${submission.data.length})`}
+                </Button>
+                <Button
+                  onClick={() => sortSubmissions.mutate()}
+                  loading={sortSubmissions.isLoading}
+                >
+                  Run sort
                 </Button>
               </Group>
               <CustomTable
@@ -124,20 +191,14 @@ const Page = () => {
         </Tabs.Panel>
 
         <Tabs.Panel value={TabTypes.Sorted}>
-          {sorted.data && sorted.data.length > 0 && (
+          {sorted.data && (
             <>
-              <CustomTable
-                headers={['username', 'counter']}
-                data={sorted.data.map(users => ({
-                  username: users.username,
-                  counter: users.counter,
-                }))}
-              >
+              <CustomTable headers={['username', 'count']} data={sorted.data}>
                 {users => {
                   return users.map(user => (
                     <tr key={user.username}>
                       <td>{user.username}</td>
-                      <td>{user.counter}</td>
+                      <td>{user.count}</td>
                     </tr>
                   ));
                 }}
@@ -233,6 +294,32 @@ const Page = () => {
                           </ActionIcon>
                         </Group>
                       </td>
+                    </tr>
+                  ));
+                }}
+              </CustomTable>
+            </>
+          )}
+        </Tabs.Panel>
+
+        <Tabs.Panel value={TabTypes.NoMention}>
+          {noMention.data && (
+            <>
+              <Group mb="xl">
+                <Button
+                  onClick={confirmDeleteNoMentions}
+                  loading={deleteNoMentions.isLoading}
+                  color="red"
+                >
+                  Delete All {`(${noMention.data.length})`}
+                </Button>
+                <Button onClick={downloadNoMentions}>Download CSV</Button>
+              </Group>
+              <CustomTable headers={['username']} data={noMention.data}>
+                {users => {
+                  return users.map(user => (
+                    <tr key={user.username}>
+                      <td>{user.username}</td>
                     </tr>
                   ));
                 }}

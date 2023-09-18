@@ -1,21 +1,11 @@
 import { z } from 'zod';
 import { createTRPCRouter, publicProcedure as PP } from '../trpc';
 
-const _generalSchema = z.object({ username: z.string() });
-const generalSchema = z.object({ users: z.array(_generalSchema) });
-const _diffSchema = z.array(
-  z.object({ username: z.string(), email: z.string() }),
-);
-const diffSchema = z.object({ general: _diffSchema, nextStage: _diffSchema });
 const _graceSchema = z.object({
   username: z.string(),
   friends: z.array(z.string()),
 });
 const graceSchema = z.object({ users: z.array(_graceSchema) });
-
-export const querySchema = z
-  .object({ query: z.object({ count: z.number().optional() }).optional() })
-  .optional();
 
 export const grace3Router = createTRPCRouter({
   uploadSavingGrace: PP.input(graceSchema).mutation(async opts => {
@@ -33,7 +23,7 @@ export const grace3Router = createTRPCRouter({
     const submissions = await ctx.prisma.savingGrace3.findMany();
     return submissions;
   }),
-  runSavingGraceSorted: PP.query(async ({ ctx }) => {
+  runSavingGraceSorted: PP.mutation(async ({ ctx }) => {
     const submissions = await ctx.prisma.savingGrace3.findMany();
 
     const counterMap = new Map<string, number>();
@@ -48,9 +38,9 @@ export const grace3Router = createTRPCRouter({
       });
     });
 
-    const sorted: { username: string; counter: number }[] = [];
+    const sorted: { username: string; count: number }[] = [];
     counterMap.forEach((value, key) => {
-      sorted.push({ username: key, counter: value });
+      sorted.push({ username: key, count: value });
     });
 
     await ctx.prisma.savingGrace3Counted.deleteMany();
@@ -59,26 +49,11 @@ export const grace3Router = createTRPCRouter({
       skipDuplicates: true,
     });
   }),
-  getSavingGraceSorted: PP.input(querySchema).query(async ({ ctx, input }) => {
-    const query = input?.query;
-    return await ctx.prisma.savingGrace3Counted.findMany({ where: query });
+  getSavingGraceSorted: PP.query(async ({ ctx }) => {
+    return await ctx.prisma.savingGrace3Counted.findMany();
   }),
   deleteSavingGraceSubmissions: PP.mutation(async ({ ctx }) => {
     await ctx.prisma.savingGrace3.deleteMany();
-  }),
-  uploadGeneral: PP.input(generalSchema).mutation(async opts => {
-    const {
-      input: { users },
-      ctx,
-    } = opts;
-
-    await ctx.prisma.general.createMany({
-      data: users,
-      skipDuplicates: true,
-    });
-  }),
-  deleteGeneral: PP.mutation(async ({ ctx }) => {
-    await ctx.prisma.general.deleteMany();
   }),
   getNoMentions: PP.query(async ({ ctx }) => {
     const users = await ctx.prisma.general.findMany();
