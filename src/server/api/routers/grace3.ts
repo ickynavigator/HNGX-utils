@@ -6,6 +6,11 @@ const _graceSchema = z.object({
   friends: z.array(z.string()),
 });
 const graceSchema = z.object({ users: z.array(_graceSchema) });
+const mentionsSchema = z
+  .object({
+    shouldBeMentioned: z.boolean().optional(),
+  })
+  .optional();
 
 export const grace3Router = createTRPCRouter({
   uploadSavingGrace: PP.input(graceSchema).mutation(async opts => {
@@ -55,15 +60,25 @@ export const grace3Router = createTRPCRouter({
   deleteSavingGraceSubmissions: PP.mutation(async ({ ctx }) => {
     await ctx.prisma.savingGrace3.deleteMany();
   }),
-  getNoMentions: PP.query(async ({ ctx }) => {
-    const users = await ctx.prisma.general.findMany();
-    const counts = await ctx.prisma.savingGrace3Counted.findMany();
+  getNoMentions: PP.input(mentionsSchema).query(async opts => {
+    const { input, ctx } = opts;
 
-    const noMentions = users.filter(user => {
-      const found = counts.find(count => count.username === user.username);
-      return !found;
+    const users = await ctx.prisma.general.findMany();
+    const grace = await ctx.prisma.savingGrace3.findMany();
+
+    // get people in general that have not been mentioned in one of the friends
+    const mentions = users.filter(user => {
+      const found = grace.find(submission => {
+        return submission.friends.includes(user.username);
+      });
+
+      if (input?.shouldBeMentioned) {
+        return found !== undefined;
+      }
+
+      return found === undefined;
     });
 
-    return noMentions;
+    return mentions;
   }),
 });

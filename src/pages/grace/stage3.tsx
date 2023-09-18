@@ -2,6 +2,7 @@ import {
   ActionIcon,
   Button,
   Center,
+  Checkbox,
   Group,
   Loader,
   Tabs,
@@ -9,6 +10,7 @@ import {
 } from '@mantine/core';
 import { useForm, zodResolver } from '@mantine/form';
 import { IconTrash } from '@tabler/icons-react';
+import { useState } from 'react';
 import { z } from 'zod';
 import CustomDropzone from '~/components/Dropzone';
 import CustomError from '~/components/Error';
@@ -52,6 +54,7 @@ type UsersSchema = z.infer<typeof usersSchema>;
 
 const Page = () => {
   const utils = api.useContext();
+  const [onlyMentioned, setOnlyMentioned] = useState(false);
 
   const upload = api.grace3.uploadSavingGrace.useMutation({
     onSuccess: async () => {
@@ -60,7 +63,9 @@ const Page = () => {
     },
   });
   const sorted = api.grace3.getSavingGraceSorted.useQuery();
-  const noMention = api.grace3.getNoMentions.useQuery();
+  const noMention = api.grace3.getNoMentions.useQuery({
+    shouldBeMentioned: onlyMentioned,
+  });
   const submission = api.grace3.getSavingGraceSubmissions.useQuery();
   const sortSubmissions = api.grace3.runSavingGraceSorted.useMutation({
     onSuccess: async () => {
@@ -78,7 +83,6 @@ const Page = () => {
       await utils.grace3.getNoMentions.invalidate();
     },
   });
-
   const form = useForm<UsersSchema>({
     initialValues: {
       users: [],
@@ -306,6 +310,16 @@ const Page = () => {
           {noMention.data && (
             <>
               <Group mb="xl">
+                <Checkbox
+                  label="Only Mentioned"
+                  checked={onlyMentioned}
+                  onChange={event =>
+                    setOnlyMentioned(event.currentTarget.checked)
+                  }
+                />
+              </Group>
+
+              <Group mb="xl">
                 <Button
                   onClick={confirmDeleteNoMentions}
                   loading={deleteNoMentions.isLoading}
@@ -315,6 +329,7 @@ const Page = () => {
                 </Button>
                 <Button onClick={downloadNoMentions}>Download CSV</Button>
               </Group>
+
               <CustomTable headers={['username']} data={noMention.data}>
                 {users => {
                   return users.map(user => (
