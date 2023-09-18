@@ -2,7 +2,6 @@ import puppeteer, {
   type Browser,
   type PuppeteerLaunchOptions,
 } from 'puppeteer';
-import { env } from '~/env.mjs';
 
 const MINIMAL_ARGS = [
   '--autoplay-policy=user-gesture-required',
@@ -17,6 +16,7 @@ const MINIMAL_ARGS = [
   '--disable-domain-reliability',
   '--disable-extensions',
   '--disable-features=AudioServiceOutOfProcess',
+  '--disable-features=site-per-process',
   '--disable-hang-monitor',
   '--disable-ipc-flooding-protection',
   '--disable-notifications',
@@ -50,7 +50,8 @@ const PAGE_USER_AGENT =
 
 export const getBrowser = async (options?: PuppeteerLaunchOptions) => {
   const browser = await puppeteer.launch({
-    headless: 'new',
+    // headless: 'new',
+    headless: false,
     args: MINIMAL_ARGS,
     ignoreHTTPSErrors: true,
     protocolTimeout: DEFAULT_PROTOCOL_TIMEOUT,
@@ -243,7 +244,12 @@ type PaginatedMovies = {
 type Movie = {
   adult: boolean;
   backdrop_path: string;
-  belongs_to_collection: string;
+  belongs_to_collection: {
+    id: number;
+    name: string;
+    poster_path: string;
+    backdrop_path: string;
+  };
   budget: number;
   genres: {
     id: number;
@@ -259,7 +265,7 @@ type Movie = {
   poster_path: string;
   production_companies: {
     id: number;
-    logo_path: string;
+    logo_path: string | null;
     name: string;
     origin_country: string;
   }[];
@@ -291,42 +297,18 @@ declare global {
 }
 
 export const getRatedMovieDetails = async () => {
-  const url =
-    'https://api.themoviedb.org/3/movie/top_rated?language=en-US&page=1';
-  const options = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      Authorization: `Bearer ${env.IMDB_API_KEY}`,
-    },
-  };
-
-  const res = await fetch(url, options);
-  const data = (await res.json()) as PaginatedMovies;
-
-  return data;
+  const res = (await import('~/utils/toprated.json')) satisfies PaginatedMovies;
+  return res;
 };
 
-export const getMovieDetails = async (id: string | number) => {
-  const url = `https://api.themoviedb.org/3/movie/${id}?language=en-US`;
-  const options = {
-    method: 'GET',
-    headers: {
-      accept: 'application/json',
-      Authorization: `Bearer ${env.IMDB_API_KEY}`,
-    },
-  };
-
-  const res = await fetch(url, options);
-  const data = (await res.json()) as Movie;
-
-  return data;
+export const getMovieDetails = async () => {
+  const res = (await import('~/utils/238.json')) satisfies Movie;
+  return res;
 };
 
 const paginatedMovies =
   global.paginatedMovies ?? (await getRatedMovieDetails());
-const movie =
-  global.movie ?? (await getMovieDetails(paginatedMovies.results[0]!.id));
+const movie = global.movie ?? (await getMovieDetails());
 
 export async function stage2Grade(
   browser: Browser,
@@ -448,17 +430,17 @@ export async function stage2Grade(
       }
     }
 
-    const movieButton = await getPageLinkElement(String(firstMovie.id));
-    if (movieButton) {
-      navigationPromise = page.waitForNavigation();
-      await movieButton.click();
-      await navigationPromise;
-    } else {
-      const movieURL = `${url}/movies/${firstMovie.id}`;
-      navigationPromise = page.waitForNavigation();
-      await page.goto(movieURL, { waitUntil: 'networkidle2' });
-      await navigationPromise;
-    }
+    // const movieButton = await getPageLinkElement(String(firstMovie.id));
+    // if (movieButton) {
+    //   navigationPromise = page.waitForNavigation();
+    //   await movieButton.click();
+    //   await navigationPromise;
+    // } else {
+    const movieURL = `${url}/movies/${firstMovie.id}`;
+    navigationPromise = page.waitForNavigation();
+    await page.goto(movieURL, { waitUntil: 'networkidle2' });
+    await navigationPromise;
+    // }
     grade += 1;
 
     const page2Selectors = [
