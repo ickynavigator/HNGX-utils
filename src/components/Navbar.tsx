@@ -54,6 +54,8 @@ const data: LinksGroupProps[] = [
     icon: IconTool,
     links: [
       { label: 'Diff', link: 'diff' },
+      { label: 'Upload General', link: 'general' },
+      { label: 'View General', link: 'general/uploaded' },
       { label: 'Grace - Stage 3', link: 'grace/stage3' },
     ],
   },
