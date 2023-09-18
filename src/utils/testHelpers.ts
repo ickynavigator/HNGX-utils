@@ -50,8 +50,7 @@ const PAGE_USER_AGENT =
 
 export const getBrowser = async (options?: PuppeteerLaunchOptions) => {
   const browser = await puppeteer.launch({
-    // headless: 'new',
-    headless: false,
+    headless: 'new',
     args: MINIMAL_ARGS,
     ignoreHTTPSErrors: true,
     protocolTimeout: DEFAULT_PROTOCOL_TIMEOUT,
@@ -365,9 +364,9 @@ export async function stage2Grade(
     const getElementsByTestID = async (selector: string) => {
       return await page.$$(`[data-testid="${selector}"]`);
     };
-    const getPageLinkElement = async (id: string) => {
-      return await page.$(`[href*="/movies/${id}"]`);
-    };
+    // const getPageLinkElement = async (id: string) => {
+    //   return await page.$(`[href*="/movies/${id}"]`);
+    // };
 
     const getElementTextContent = async (selector: string) => {
       return await (
