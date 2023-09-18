@@ -58,7 +58,16 @@ model Stage2UserFailed {
   updatedAt  DateTime @default(now())
 }
 
+model General {
+  username String @id @unique
+}
+
 model SavingGrace3 {
   username String   @id @unique
   friends  String[]
+}
+
+model SavingGrace3Counted {
+  username String @id @unique
+  count    Int    @default(0)
 }
