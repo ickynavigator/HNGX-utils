@@ -1,4 +1,5 @@
 import { createTRPCRouter } from '~/server/api/trpc';
+import { grace3Router } from './routers/grace3';
 import { stage1Router } from './routers/stage1';
 import { stage2Router } from './routers/stage2';
 import { toolsRouter } from './routers/tools';
@@ -11,6 +12,7 @@ import { toolsRouter } from './routers/tools';
 export const appRouter = createTRPCRouter({
   stage1: stage1Router,
   stage2: stage2Router,
+  grace3: grace3Router,
   tools: toolsRouter,
 });
 

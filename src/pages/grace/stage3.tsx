@@ -43,17 +43,17 @@ type UsersSchema = z.infer<typeof usersSchema>;
 const Page = () => {
   const utils = api.useContext();
 
-  const upload = api.tools.uploadSavingGrace3.useMutation({
+  const upload = api.grace3.uploadSavingGrace.useMutation({
     onSuccess: async () => {
-      await utils.tools.getSavingGrace3Submissions.invalidate();
-      await utils.tools.getSavingGrace3Sorted.invalidate();
+      await utils.grace3.getSavingGraceSubmissions.invalidate();
+      await utils.grace3.getSavingGraceSorted.invalidate();
     },
   });
-  const sorted = api.tools.getSavingGrace3Sorted.useQuery();
-  const submission = api.tools.getSavingGrace3Submissions.useQuery();
-  const deleteAll = api.tools.deleteSavingGrace3Submissions.useMutation({
+  const sorted = api.grace3.getSavingGraceSorted.useQuery();
+  const submission = api.grace3.getSavingGraceSubmissions.useQuery();
+  const deleteAll = api.grace3.deleteSavingGraceSubmissions.useMutation({
     onSuccess: async () => {
-      await utils.tools.getSavingGrace3Submissions.invalidate();
+      await utils.grace3.getSavingGraceSubmissions.invalidate();
     },
   });
 
